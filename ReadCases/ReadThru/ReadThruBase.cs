@@ -1,4 +1,5 @@
 ﻿using Alachisoft.NCache.Runtime.Caching;
+using Common;
 
 namespace BackingSourceTests.ReadCases.ReadThru
 {
@@ -40,7 +41,7 @@ namespace BackingSourceTests.ReadCases.ReadThru
         {
             ReadThruOptions readThruOptions = new()
             {
-                Mode = ReadMode.ReadThru,
+                Mode = ReadMode.ReadThruForced,
                 ProviderName = Guid.NewGuid().ToString() // Random invalid provider name
             };
 
@@ -56,5 +57,17 @@ namespace BackingSourceTests.ReadCases.ReadThru
 
             return readThruOptions;
         }
+
+        public static string[] GetRandomKeysForReadThruBulk(int totalKeys = 10000)
+        {
+            string[] keys = new string[totalKeys];
+
+            for (int i = 0; i < totalKeys; i++)
+            {
+                keys[i] = GetRandomKey();
+            }
+
+            return keys;
+        }    
     }
 }

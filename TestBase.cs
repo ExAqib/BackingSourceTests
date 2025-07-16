@@ -1,11 +1,6 @@
 ﻿using Alachisoft.NCache.Client;
-using Alachisoft.NCache.Common.Monitoring.MetricsServer.PublishingData;
 using Common;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace BackingSourceTests
 {
@@ -34,6 +29,15 @@ namespace BackingSourceTests
         {
             Assert.That(product, Is.Not.Null, $"Product against key `{key}` should not be null when ReadThru is configured.");
             Assert.That(product, Is.EqualTo(Util.GetProductForReadThru(key)), "Product should match the expected product from ReadThru provider.");
+        }
+        
+        public static void VerifyItemsObtainedFromReadThru(IDictionary<string, Product> getBulkResult)
+        {
+            Assert.That(getBulkResult, Is.Not.Null, "Bulk result should not be null when ReadThru is configured.");   
+            foreach (var pair in getBulkResult)
+            {
+                VerifyItemObtainedFromReadThru(pair.Key, pair.Value);
+            }
         }
 
         public static void VerifyItemObtainedFromCache(Product productObtained)

@@ -145,7 +145,7 @@ namespace BackingSourceTests.ReadCases.ReadThru
         [Test]
         public void VerifyExceptionWhenDataSourceReturnsNull()
         {
-            string key = ReadThruCacheCommunication.GetReadThruKeyToRetrunNull();
+            string key = ReadThruCacheCommunication.ReadThruNullKey;
 
             Assert.Throws<OperationFailedException>(() =>
             {
@@ -157,7 +157,7 @@ namespace BackingSourceTests.ReadCases.ReadThru
         [Test]
         public void VerifyExceptionWhenDataSourceThrowsException()
         {
-            string key = ReadThruCacheCommunication.GetReadThruKeyToThrowException(); 
+            string key = ReadThruCacheCommunication.ReadThruExceptionKey; 
 
             Assert.Throws<OperationFailedException>(() =>
             {
