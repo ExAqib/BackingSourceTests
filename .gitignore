@@ -1,0 +1,23 @@
+# Build folders
+bin/
+obj/
+
+# Visual Studio files
+.vs/
+*.user
+*.suo
+
+# NCache configs
+*.ncconf
+
+# Git folder
+git
+
+# Debug/Release folders
+Debug/
+Release/
+
+# Other temporary files
+*.log
+*.cache
+*.tmp
