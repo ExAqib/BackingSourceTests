@@ -87,6 +87,7 @@ namespace BackingSourceTests.ReadCases.ReadThru
             });
         }
 
+        // Verify all items are fetched from data source if ReadThruForced option is used and items are present in cache
         [Test]
         public void GetBulkItems_ReadThruForced_AllItemsRefreshedFromDataSource()
         {

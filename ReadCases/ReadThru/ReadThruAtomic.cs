@@ -26,124 +26,105 @@ namespace BackingSourceTests.ReadCases.ReadThru
 
     [TestFixture]
     internal class ReadThruAtomic : ReadThruBase
-    {       
-
+    {
         [Test]
-        public void VerifyItemIsObtainedFromDataSource()
+        public void GetItem_WhenNotInCache_FetchesFromDataSource()
         {
             string key = GetRandomKey();
             Product product = Cache.Get<Product>(key, GetReadThruOptions());
             VerifyItemObtainedFromReadThru(key, product);
         }
 
-        // ✅ verify item is NOT obtained from DS if present in cache
         [Test]
-        public void VerifyItemIsNotObtainedFromDataSourceIfPresentInCache()
+        public void GetItem_WhenPresentInCache_DoesNotFetchFromDataSource()
         {
             string key = GetRandomKey();
             Product expected = Util.GetProductForCache(key);
-          
+
             Cache.Insert(key, expected);
 
-            // Try to get from cache again with ReadThru options
             Product product = Cache.Get<Product>(key, GetReadThruOptions());
-            VerifyItemObtainedFromCache(product);   
+            VerifyItemObtainedFromCache(product);
         }
 
-        // ✅ verify item is obtained with default readThru options (no provider name)
         [Test]
-        public void VerifyItemIsObtainedWithDefaultReadThruOptions()
+        public void GetItem_WithDefaultReadThruOptions_FetchesFromDataSource()
         {
             string key = GetRandomKey();
 
-            // Using default options (only Mode = ReadThru, no explicit provider)
             Product product = Cache.Get<Product>(key, GetDefaultReadThruOptions());
             VerifyItemObtainedFromReadThru(key, product);
         }
 
-        // ✅ verify exception is thrown if wrong readthru options are given and item is not present in cache
         [Test]
-        public void VerifyExceptionThrownWhenInvalidReadThruOptionsProvided()
+        public void GetItem_WithInvalidReadThruOptions_ThrowsOperationFailedException()
         {
-            string key = GetRandomKey(); 
+            string key = GetRandomKey();
 
             var ex = Assert.Throws<OperationFailedException>(() =>
             {
                 _ = Cache.Get<object>(key, GetInvalidReadOptions());
             });
 
-            // Verify the message matches exactly
             Assert.That(ex.Message, Is.EqualTo(BackingSourceNotAvailable));
         }
 
-        // ✅ verify NO exception is thrown if readThru options are NOT given & item present
         [Test]
-        public void VerifyNoExceptionWhenItemPresentAndNoReadThruOptions()
+        public void GetItem_WhenPresentInCacheWithoutReadThruOptions_DoesNotThrow()
         {
             string key = GetRandomKey();
             Product expected = Util.GetProductForCache(key);
             Cache.Insert(key, expected);
 
-            // Should retrieve from cache without throwing
             Product product = Cache.Get<Product>(key);
 
             Assert.That(product, Is.Not.Null);
             Assert.That(product, Is.EqualTo(expected));
         }
-                
-        // ✅ verify NO exception if ReadMode.None is provided
+
         [Test]
-        public void VerifyNoExceptionWhenReadModeNone()
+        public void GetItem_WithReadModeNone_ReturnsCachedValue()
         {
             string key = GetRandomKey();
             Product expected = Util.GetProductForCache(key);
             Cache.Insert(key, expected);
 
-            // Should just return cached value
             Product product = Cache.Get<Product>(key, GetNoneReadThruOptions());
             Assert.That(product, Is.EqualTo(expected));
         }
 
-        // ✅ verify item is obtained from DS if ReadThruForced & item IS present (forced refresh)
         [Test]
-        public void VerifyItemObtainedFromDSWithReadThruForcedEvenIfInCache()
+        public void GetItem_WithReadThruForced_WhenInCache_RefreshesFromDataSource()
         {
             string key = GetRandomKey();
 
-            // Preload cache with stale product
             Product stale = new Product { Id = -1, Name = "Stale", Price = 0 };
             Cache.Insert(key, stale);
 
-            // Force readThru
             Product freshProduct = Cache.Get<Product>(key, GetReadThruForcedOptions());
 
-            // Should return updated DS value
             VerifyItemObtainedFromReadThru(key, freshProduct);
 
-            // Ensure cache was refreshed with fresh value
             Product fromCache = Cache.Get<Product>(key);
             VerifyItemObtainedFromReadThru(key, fromCache);
 
             Assert.That(stale, Is.Not.EqualTo(fromCache));
         }
 
-        // ✅ verify item is obtained from DS if ReadThruForced & NOT present in cache
         [Test]
-        public void VerifyItemObtainedFromDSWithReadThruForcedWhenMissing()
+        public void GetItem_WithReadThruForced_WhenMissing_FetchesAndCachesFromDataSource()
         {
             string key = GetRandomKey();
 
             Product product = Cache.Get<Product>(key, GetReadThruForcedOptions());
             VerifyItemObtainedFromReadThru(key, product);
 
-            // Also ensure it was inserted into cache after fetching
             Product fromCache = Cache.Get<Product>(key);
             VerifyItemObtainedFromReadThru(key, fromCache);
         }
 
-        // ✅ verify proper exception if DS returns NULL
         [Test]
-        public void VerifyExceptionWhenDataSourceReturnsNull()
+        public void GetItem_WhenDataSourceReturnsNull_ThrowsOperationFailedException()
         {
             string key = ReadThruCacheCommunication.ReadThruNullKey;
 
@@ -153,11 +134,10 @@ namespace BackingSourceTests.ReadCases.ReadThru
             }, "Should throw exception when DS returns null product.");
         }
 
-        // ✅ verify proper exception if DS itself throws exception
         [Test]
-        public void VerifyExceptionWhenDataSourceThrowsException()
+        public void GetItem_WhenDataSourceThrowsException_ThrowsOperationFailedException()
         {
-            string key = ReadThruCacheCommunication.ReadThruExceptionKey; 
+            string key = ReadThruCacheCommunication.ReadThruExceptionKey;
 
             Assert.Throws<OperationFailedException>(() =>
             {
@@ -165,5 +145,4 @@ namespace BackingSourceTests.ReadCases.ReadThru
             }, "Should propagate exception thrown by data source.");
         }
     }
-    
 }
