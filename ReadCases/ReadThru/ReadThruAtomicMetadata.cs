@@ -9,9 +9,8 @@ namespace BackingSourceTests.ReadCases.ReadThru
     [TestFixture]
     class ReadThruAtomicMetadata : ReadThruBase
     {
-        //PENDING CASES
-        // verify itemas are properly inserted to cachae with queryinfo, tags,namedtags etc
-        // verify resync works
+        // PENDING Cases
+        // add defaltLonger etc expirations
 
         [SetUp]
         public void ClearCache()
@@ -20,97 +19,90 @@ namespace BackingSourceTests.ReadCases.ReadThru
         }
 
         [Test]
-        public void VerifyAbsoluteExpirationIsAppliedFromDataSource()
+        public void GetItem_WithAbsoluteExpirationKey_AppliesAbsoluteExpirationFromDataSource()
         {
-            // Key that encodes expiration 
-            // make sure cache is cleared before running this test. (currently [SetUp] is callled that clears the cache)
             string key = ReadThruCacheCommunication.ReadThruKeyForAbsoluteExpiration;
 
             var product = Cache.Get<Product>(key, GetReadThruOptions());
-
-            // Fetch cache item metadata
             CacheItem cacheItem = Cache.GetCacheItem(key);
 
             Assert.Multiple(() =>
             {
                 Assert.That(cacheItem?.Expiration?.Type, Is.Not.Null, "Absolute Expiration set by ReadThru Provider is not working.");
                 Assert.That(cacheItem.Expiration.Type, Is.EqualTo(ExpirationType.Absolute));
-                Assert.That(ReadThruCacheCommunication.IsExpirationIntervalSameAsSetByReadThru(cacheItem.Expiration.ExpireAfter, key), Is.True, "Expiration interval mismatch between cache and ReadThruProvider");
+                Assert.That(ReadThruCacheCommunication.IsExpirationIntervalSameAsSetByReadThru(cacheItem.Expiration.ExpireAfter, key),
+                    Is.True, "Expiration interval mismatch between cache and ReadThruProvider");
             });
         }
 
         [Test]
-        public void VerifySlidingExpirationIsAppliedFromDataSource()
+        public void GetItem_WithSlidingExpirationKey_AppliesSlidingExpirationFromDataSource()
         {
-            // Key that encodes expiration 
-            // make sure cache is cleared before running this test. (currently [SetUp] is callled that clears the cache)
             string key = ReadThruCacheCommunication.ReadThruKeyForSlidingExpiration;
 
             var product = Cache.Get<Product>(key, GetReadThruOptions());
-
-            // Fetch cache item metadata
             CacheItem cacheItem = Cache.GetCacheItem(key);
 
             Assert.Multiple(() =>
             {
                 Assert.That(cacheItem?.Expiration?.Type, Is.Not.Null, "Sliding Expiration set by ReadThru Provider is not working.");
                 Assert.That(cacheItem.Expiration.Type, Is.EqualTo(ExpirationType.Sliding));
-                Assert.That(ReadThruCacheCommunication.IsExpirationIntervalSameAsSetByReadThru(cacheItem.Expiration.ExpireAfter, key), Is.True, "Expiration interval mismatch between cache and ReadThruProvider");
+                Assert.That(ReadThruCacheCommunication.IsExpirationIntervalSameAsSetByReadThru(cacheItem.Expiration.ExpireAfter, key),
+                    Is.True, "Expiration interval mismatch between cache and ReadThruProvider");
             });
         }
 
         [Test]
-        public void VerifyItemPriorityIsAppliedFromDataSource()
+        public void GetItem_WithPriorityKey_AppliesItemPriorityFromDataSource()
         {
             string key = ReadThruCacheCommunication.ReadThruKeyForPriority;
 
             var product = Cache.Get<Product>(key, GetReadThruOptions());
-
             CacheItem cacheItem = Cache.GetCacheItem(key);
 
             Assert.Multiple(() =>
             {
                 Assert.That(cacheItem?.Priority, Is.Not.Null, "CacheItem Priority set by ReadThru Provider is not working.");
-                Assert.That(ReadThruCacheCommunication.IsPrioritySameAsSetByReadThru(cacheItem.Priority, key), Is.True, "CacheItem priority mismatch between cache and ReadThruProvider");
+                Assert.That(ReadThruCacheCommunication.IsPrioritySameAsSetByReadThru(cacheItem.Priority, key),
+                    Is.True, "CacheItem priority mismatch between cache and ReadThruProvider");
             });
         }
 
-
         [Test]
-        public void VerifyTagsAreAppliedFromDataSource()
+        public void GetItem_WithTagKey_AppliesTagsFromDataSource()
         {
             string key = ReadThruCacheCommunication.ReadThruKeyForNamedTag;
 
             var product = Cache.Get<Product>(key, GetReadThruOptions());
-
             CacheItem cacheItem = Cache.GetCacheItem(key);
+
             Assert.Multiple(() =>
             {
                 Assert.That(cacheItem?.Tags, Is.Not.Null, "CacheItem Tag set by ReadThru Provider is not working.");
-                Assert.That(ReadThruCacheCommunication.IsTagSameAsSetByReadThru(cacheItem.Tags, key), Is.True, "CacheItem priority mismatch between cache and ReadThruProvider");
+                Assert.That(ReadThruCacheCommunication.IsTagSameAsSetByReadThru(cacheItem.Tags, key),
+                    Is.True, "CacheItem tag mismatch between cache and ReadThruProvider");
             });
         }
 
         [Test]
-        public void VerifyNamedTagsAreAppliedFromDataSource()
+        public void GetItem_WithNamedTagKey_AppliesNamedTagsFromDataSource()
         {
             string key = ReadThruCacheCommunication.ReadThruKeyForNamedTag;
 
             var product = Cache.Get<Product>(key, GetReadThruOptions());
-
             CacheItem cacheItem = Cache.GetCacheItem(key);
 
             Assert.Multiple(() =>
             {
                 Assert.That(cacheItem?.NamedTags, Is.Not.Null, "CacheItem NamedTags set by ReadThru Provider is not working.");
-                Assert.That(ReadThruCacheCommunication.IsNamedTagSameAsSetByReadThru(cacheItem.NamedTags, key), Is.True, "CacheItem NamedTags mismatch between cache and ReadThruProvider");
+                Assert.That(ReadThruCacheCommunication.IsNamedTagSameAsSetByReadThru(cacheItem.NamedTags, key),
+                    Is.True, "CacheItem NamedTags mismatch between cache and ReadThruProvider");
             });
         }
 
         [Test]
-        public void VerifyQueryInfoAppliedFromDataSource()
+        public void GetItem_WithQueryInfoKey_CanBeQueriedUsingAssignedQueryInfo()
         {
-            // PRE-REQUISITE: MAKE SURE PRODUCT CLASS IS QUERY INDEXED
             string key = ReadThruCacheCommunication.ReadThruKeyForQueryInfo;
 
             var product = Cache.Get<Product>(key, GetReadThruOptions());
@@ -122,14 +114,14 @@ namespace BackingSourceTests.ReadCases.ReadThru
 
             string query = $"SELECT * FROM Product WHERE {fieldName} = {expectedValue}";
             TestContext.WriteLine($"Executing query: {query}");
-            var queryCommand =  new QueryCommand(query);
 
+            var queryCommand = new QueryCommand(query);
             var reader = Cache.SearchService.ExecuteReader(queryCommand);
 
             bool foundMatchingRecord = false;
             while (reader.Read())
             {
-               int index = reader.GetOrdinal(fieldName);
+                int index = reader.GetOrdinal(fieldName);
 
                 Assert.That(index, Is.GreaterThanOrEqualTo(0),
                     $"Expected field '{fieldName}' not found in query result metadata.");
@@ -143,8 +135,33 @@ namespace BackingSourceTests.ReadCases.ReadThru
             }
 
             Assert.That(foundMatchingRecord, Is.True,
-      $"Query did not return any matching records for key '{key}' with condition {fieldName} = {expectedValue}.");
-
+                $"Query did not return any matching records for key '{key}' with condition {fieldName} = {expectedValue}.");
         }
+
+        [Test]
+        public void GetItem_WhenResyncTriggered_FetchesFreshValueFromDataSource()
+        {
+            string key = GetRandomKey();
+
+            // Insert stale product in cache
+            var stale = Util.GetProductForCache(key);
+
+            CacheItem cacheItem = GetCacheItemWithResyncOptions(stale);
+
+            Cache.Insert(key, cacheItem);
+
+            TestContext.WriteLine($"Sleeping for {CleanInterval} seconds to verify ResyncExpiration for test case {nameof(GetItem_WhenResyncTriggered_FetchesFreshValueFromDataSource)}.");
+
+            Thread.Sleep(CleanInterval + 5);// Sleep for some extra time so that resync can be triggered properly
+
+            // Fetch after resync
+            Product refreshed = Cache.Get<Product>(key); //  May cause TypeCast exception from CacheItem to Product
+
+            // Assert
+            VerifyItemObtainedFromReadThru(key, refreshed);
+            Assert.That(refreshed, Is.Not.EqualTo(stale), "Resync should have fetched a fresh value from the data source.");
+        }
+
+
     }
 }

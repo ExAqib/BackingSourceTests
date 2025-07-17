@@ -8,6 +8,7 @@ namespace BackingSourceTests
     {
         public ICache Cache { get; set; }  
         public string CacheName = "BackingSourceTests";
+        public int CleanInterval = 30; //(seconds) Assign value that is double of actual clean interval to ensure that clean interanval does not interfere with tests.
 
         #region Constants 
         public const string ReadThruProviderName = "ReadThruProvider";

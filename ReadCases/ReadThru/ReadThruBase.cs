@@ -1,4 +1,5 @@
-﻿using Alachisoft.NCache.Runtime.Caching;
+﻿using Alachisoft.NCache.Client;
+using Alachisoft.NCache.Runtime.Caching;
 using Common;
 
 namespace BackingSourceTests.ReadCases.ReadThru
@@ -58,6 +59,12 @@ namespace BackingSourceTests.ReadCases.ReadThru
             return readThruOptions;
         }
 
+        public static ResyncOptions GetResyncOptions()
+        {
+            ResyncOptions resyncOptions = new(true, ReadThruProviderName);           
+            return resyncOptions;
+        }   
+
         public static string[] GetRandomKeysForReadThruBulk(int totalKeys = 10000)
         {
             string[] keys = new string[totalKeys];
@@ -68,6 +75,15 @@ namespace BackingSourceTests.ReadCases.ReadThru
             }
 
             return keys;
-        }    
+        }
+
+        public CacheItem GetCacheItemWithResyncOptions(Product stale)
+        {
+            return new CacheItem(stale)
+            {
+                Expiration = new Expiration(ExpirationType.Sliding, TimeSpan.FromSeconds(CleanInterval)),
+                ResyncOptions = GetResyncOptions()
+            };
+        }
     }
 }
