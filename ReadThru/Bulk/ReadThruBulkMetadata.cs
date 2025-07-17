@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BackingSourceTests.ReadCases.ReadThru
+namespace BackingSourceTests.ReadThru.Bulk
 {
     [TestFixture]
     class ReadThruBulkMetadata : ReadThruBase

@@ -4,7 +4,7 @@ using Alachisoft.NCache.Runtime.Caching;
 using Common;
 
 
-namespace BackingSourceTests.ReadCases.ReadThru
+namespace BackingSourceTests.ReadThru.Atomic
 {
     [TestFixture]
     class ReadThruAtomicMetadata : ReadThruBase
