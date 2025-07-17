@@ -13,20 +13,20 @@ namespace BackingSourceTests.ReadThru.Bulk
     [TestFixture]
     class ReadThruBulkMetadata : ReadThruBase
     {
+        string[] _keys;
+
         [SetUp]
-        public void ClearCache()
+        public void SetUp()
         {
             Cache.Clear();
+            _keys = GetRandomKeysForReadThruBulk(100);
+            PerformAddBulk(_keys);
         }
 
         [Test]
         public void GetBulkItems_WithReadThruForced_AbsoluteExpirationIsApplied()
         {
-            string[] keys = GetRandomKeysForReadThruBulk(100);
-
-            PerformAddBulk(keys);
-
-            string[] halfKeys = GetUpdatedHalfKeys(keys, ReadThruCacheCommunication.ReadThruKeyForAbsoluteExpiration);
+            string[] halfKeys = GetUpdatedHalfKeys(_keys, ReadThruCacheCommunication.ReadThruKeyForAbsoluteExpiration);
 
             IDictionary<string, Product>? items = Cache.GetBulk<Product>(halfKeys, GetReadThruForcedOptions());
 
@@ -49,7 +49,7 @@ namespace BackingSourceTests.ReadThru.Bulk
                 }
 
                 // Other untouched keys must remain unaffected
-                foreach (var key in keys.Except(halfKeys))
+                foreach (var key in _keys.Except(halfKeys))
                 {
                     CacheItem cacheItem = Cache.GetCacheItem(key);
                     Assert.That(cacheItem?.Expiration?.Type, Is.Null,
@@ -61,11 +61,7 @@ namespace BackingSourceTests.ReadThru.Bulk
         [Test]
         public void GetBulkItems_WithReadThruForced_SlidingExpirationIsApplied()
         {
-            string[] keys = GetRandomKeysForReadThruBulk(100);
-
-            PerformAddBulk(keys);
-
-            string[] halfKeys = GetUpdatedHalfKeys(keys, ReadThruCacheCommunication.ReadThruKeyForSlidingExpiration);
+            string[] halfKeys = GetUpdatedHalfKeys(_keys, ReadThruCacheCommunication.ReadThruKeyForSlidingExpiration);
 
             IDictionary<string, Product>? items = Cache.GetBulk<Product>(halfKeys, GetReadThruForcedOptions());
 
@@ -86,7 +82,7 @@ namespace BackingSourceTests.ReadThru.Bulk
                         $"Expiration interval mismatch for key {key}");
                 }
 
-                foreach (var key in keys.Except(halfKeys))
+                foreach (var key in _keys.Except(halfKeys))
                 {
                     CacheItem cacheItem = Cache.GetCacheItem(key);
                     Assert.That(cacheItem?.Expiration?.Type, Is.Null,
@@ -98,11 +94,7 @@ namespace BackingSourceTests.ReadThru.Bulk
         [Test]
         public void GetBulkItems_WithReadThruForced_ItemPriorityIsApplied()
         {
-            string[] keys = GetRandomKeysForReadThruBulk(100);
-
-            PerformAddBulk(keys);
-
-            string[] halfKeys = GetUpdatedHalfKeys(keys, ReadThruCacheCommunication.ReadThruKeyForPriority);
+            string[] halfKeys = GetUpdatedHalfKeys(_keys, ReadThruCacheCommunication.ReadThruKeyForPriority);
 
             IDictionary<string, Product>? items = Cache.GetBulk<Product>(halfKeys, GetReadThruForcedOptions());
 
@@ -121,7 +113,7 @@ namespace BackingSourceTests.ReadThru.Bulk
                         $"Priority mismatch for key {key}");
                 }
 
-                foreach (var key in keys.Except(halfKeys))
+                foreach (var key in _keys.Except(halfKeys))
                 {
                     CacheItem cacheItem = Cache.GetCacheItem(key);
                     Assert.That(cacheItem?.Priority, Is.EqualTo(CacheItemPriority.Default),
@@ -133,11 +125,7 @@ namespace BackingSourceTests.ReadThru.Bulk
         [Test]
         public void GetBulkItems_WithReadThruForced_TagsAreAppliedAndQueryable()
         {
-            string[] keys = GetRandomKeysForReadThruBulk(100);
-
-            PerformAddBulk(keys);
-
-            string[] halfKeys = GetUpdatedHalfKeys(keys, ReadThruCacheCommunication.ReadThruKeyForTag);
+            string[] halfKeys = GetUpdatedHalfKeys(_keys, ReadThruCacheCommunication.ReadThruKeyForTag);
 
             IDictionary<string, Product>? items = Cache.GetBulk<Product>(halfKeys, GetReadThruForcedOptions());
 
@@ -162,7 +150,7 @@ namespace BackingSourceTests.ReadThru.Bulk
                         $"Key {key} should be retrievable via tag query.");
                 }
 
-                foreach (var key in keys.Except(halfKeys))
+                foreach (var key in _keys.Except(halfKeys))
                 {
                     CacheItem cacheItem = Cache.GetCacheItem(key);
                     Assert.That(cacheItem?.Tags, Is.Null,
@@ -174,11 +162,7 @@ namespace BackingSourceTests.ReadThru.Bulk
         [Test]
         public void GetBulkItems_WithReadThruForced_NamedTagsAreAppliedAndQueryable()
         {
-            string[] keys = GetRandomKeysForReadThruBulk(100);
-
-            PerformAddBulk(keys);
-
-            string[] halfKeys = GetUpdatedHalfKeys(keys, ReadThruCacheCommunication.ReadThruKeyForNamedTag);
+            string[] halfKeys = GetUpdatedHalfKeys(_keys, ReadThruCacheCommunication.ReadThruKeyForNamedTag);
 
             IDictionary<string, Product>? items = Cache.GetBulk<Product>(halfKeys, GetReadThruForcedOptions());
 
@@ -197,7 +181,7 @@ namespace BackingSourceTests.ReadThru.Bulk
                         $"NamedTags mismatch for key {key}");
                 }
 
-                foreach (var key in keys.Except(halfKeys))
+                foreach (var key in _keys.Except(halfKeys))
                 {
                     CacheItem cacheItem = Cache.GetCacheItem(key);
                     Assert.That(cacheItem?.NamedTags, Is.Null,
@@ -209,11 +193,7 @@ namespace BackingSourceTests.ReadThru.Bulk
         [Test]
         public void GetBulkItems_WithReadThruForced_QueryInfoIsAppliedAndQueryable()
         {
-            string[] keys = GetRandomKeysForReadThruBulk(100);
-
-            PerformAddBulk(keys);
-
-            string[] halfKeys = GetUpdatedHalfKeys(keys, ReadThruCacheCommunication.ReadThruKeyForQueryInfo);
+            string[] halfKeys = GetUpdatedHalfKeys(_keys, ReadThruCacheCommunication.ReadThruKeyForQueryInfo);
 
             IDictionary<string, Product>? items = Cache.GetBulk<Product>(halfKeys, GetReadThruForcedOptions());
 
@@ -253,19 +233,18 @@ namespace BackingSourceTests.ReadThru.Bulk
         [Test]
         public void GetBulkItems_WhenResyncTriggered_FetchesFreshValuesFromDataSource()
         {
-            string[] keys = GetRandomKeysForReadThruBulk(50);
-
-            PerformAddBulkWithResyncOptions(keys);
+            Cache.Clear();
+            PerformAddBulkWithResyncOptions(_keys);
 
             SleepForCleanInterval(nameof(GetBulkItems_WhenResyncTriggered_FetchesFreshValuesFromDataSource));
 
-            IDictionary<string, Product>? refreshedItems = Cache.GetBulk<Product>(keys);
+            IDictionary<string, Product>? refreshedItems = Cache.GetBulk<Product>(_keys);
 
             Assert.That(refreshedItems, Is.Not.Null, "GetBulk should not return null after resync.");
 
             Assert.Multiple(() =>
             {
-                foreach (var key in keys)
+                foreach (var key in _keys)
                 {
                     Product refreshed = refreshedItems[key];
                     VerifyItemObtainedFromReadThru(key, refreshed);
