@@ -85,5 +85,69 @@ namespace BackingSourceTests.ReadCases.ReadThru
                 ResyncOptions = GetResyncOptions()
             };
         }
+
+        public string[] GetHalfKeys(string[] keys)
+        {
+            var half = keys.Take(keys.Length / 2).ToArray();
+            return half;
+        }
+
+        public string UpdateKeyWith(string key, string updatedValue)
+        {
+            return string.Join( Tilda ,[key, updatedValue]);
+        }
+
+        public string[] UpdateKeysWith(string[] keys, string updatedValue)
+        {
+            string[] updatedKeys = new string[keys.Length];
+
+            for (int i = 0; i < keys.Length; i++)
+            {
+                updatedKeys[i] = UpdateKeyWith(keys[i],updatedValue);
+            }
+
+            return updatedKeys;
+        }
+
+        public string[] GetUpdatedHalfKeys(string[] keys, string updatedMessage)
+        {
+            var halfKeys = GetHalfKeys(keys);
+            var updatedKeys = UpdateKeysWith(halfKeys, updatedMessage);
+            return updatedKeys;
+        }
+
+        public void PerformAddBulk(string[] keys)
+        {
+            var items = new Dictionary<string, CacheItem>();
+            
+            for (int i = 0; i < keys.Length; i++)
+            {
+                var product = Util.GetProductForCache(keys[i]);
+                var cacheItem = GetCacheItem(product);
+                items.Add(keys[i], cacheItem);
+            }
+
+            Cache.AddBulk(items);
+        }
+
+        private CacheItem GetCacheItem(Product product)
+        {
+            var cacheItem = new CacheItem(product);
+            return cacheItem;
+        }
+
+        public void PerformAddBulkWithResyncOptions(string[] keys)
+        {
+            var bulkItems = new Dictionary<string, CacheItem>();
+
+            foreach (var key in keys)
+            {
+                var staleProduct = Util.GetProductForCache(key);
+                CacheItem cacheItem = GetCacheItemWithResyncOptions(staleProduct);
+                bulkItems.Add(key, cacheItem);
+            }
+
+            Cache.AddBulk(bulkItems);
+        }
     }
 }

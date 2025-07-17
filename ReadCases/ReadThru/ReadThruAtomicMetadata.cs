@@ -11,6 +11,7 @@ namespace BackingSourceTests.ReadCases.ReadThru
     {
         // PENDING Cases
         // add defaltLonger etc expirations
+        // add updatKeWyWith tild logic in test casesa and provider
 
         [SetUp]
         public void ClearCache()
@@ -150,9 +151,7 @@ namespace BackingSourceTests.ReadCases.ReadThru
 
             Cache.Insert(key, cacheItem);
 
-            TestContext.WriteLine($"Sleeping for {CleanInterval} seconds to verify ResyncExpiration for test case {nameof(GetItem_WhenResyncTriggered_FetchesFreshValueFromDataSource)}.");
-
-            Thread.Sleep(CleanInterval + 5);// Sleep for some extra time so that resync can be triggered properly
+            SleepForCleanInterval(nameof(GetItem_WhenResyncTriggered_FetchesFreshValueFromDataSource));
 
             // Fetch after resync
             Product refreshed = Cache.Get<Product>(key); //  May cause TypeCast exception from CacheItem to Product
@@ -161,7 +160,6 @@ namespace BackingSourceTests.ReadCases.ReadThru
             VerifyItemObtainedFromReadThru(key, refreshed);
             Assert.That(refreshed, Is.Not.EqualTo(stale), "Resync should have fetched a fresh value from the data source.");
         }
-
 
     }
 }

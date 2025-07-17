@@ -9,6 +9,7 @@ namespace BackingSourceTests
         public ICache Cache { get; set; }  
         public string CacheName = "BackingSourceTests";
         public int CleanInterval = 30; //(seconds) Assign value that is double of actual clean interval to ensure that clean interanval does not interfere with tests.
+        public char Tilda = '~';
 
         #region Constants 
         public const string ReadThruProviderName = "ReadThruProvider";
@@ -53,5 +54,16 @@ namespace BackingSourceTests
                     throw new ArgumentNullException(nameof(productObtained), "Name of item added to cache should not be null.");                
             });
         }
+
+        public void SleepForCleanInterval(string testName = "")
+        {
+            TestContext.WriteLine(
+                $"{(string.IsNullOrEmpty(testName) ? "" : $"for test {testName}")}. -> Sleeping for {CleanInterval + 5} seconds."
+            );
+
+            // Wait slightly longer than CleanInterval to ensure resync has completed
+            Thread.Sleep(CleanInterval + 5);
+        }
+
     }
 }
