@@ -30,7 +30,7 @@ namespace BackingSourceTests.ReadThru.Bulk
 
             IDictionary<string, Product>? items = Cache.GetBulk<Product>(halfKeys, GetReadThruForcedOptions());
 
-            VerifyItemsObtainedFromReadThru(items);
+            VerifyItemsObtainedFromBackingSource(items);
 
             Assert.Multiple(() =>
             {
@@ -65,7 +65,7 @@ namespace BackingSourceTests.ReadThru.Bulk
 
             IDictionary<string, Product>? items = Cache.GetBulk<Product>(halfKeys, GetReadThruForcedOptions());
 
-            VerifyItemsObtainedFromReadThru(items);
+            VerifyItemsObtainedFromBackingSource(items);
 
             Assert.Multiple(() =>
             {
@@ -98,7 +98,7 @@ namespace BackingSourceTests.ReadThru.Bulk
 
             IDictionary<string, Product>? items = Cache.GetBulk<Product>(halfKeys, GetReadThruForcedOptions());
 
-            VerifyItemsObtainedFromReadThru(items);
+            VerifyItemsObtainedFromBackingSource(items);
 
             Assert.Multiple(() =>
             {
@@ -129,7 +129,7 @@ namespace BackingSourceTests.ReadThru.Bulk
 
             IDictionary<string, Product>? items = Cache.GetBulk<Product>(halfKeys, GetReadThruForcedOptions());
 
-            VerifyItemsObtainedFromReadThru(items);
+            VerifyItemsObtainedFromBackingSource(items);
 
             Assert.Multiple(() =>
             {
@@ -166,7 +166,7 @@ namespace BackingSourceTests.ReadThru.Bulk
 
             IDictionary<string, Product>? items = Cache.GetBulk<Product>(halfKeys, GetReadThruForcedOptions());
 
-            VerifyItemsObtainedFromReadThru(items);
+            VerifyItemsObtainedFromBackingSource(items);
 
             Assert.Multiple(() =>
             {
@@ -197,7 +197,7 @@ namespace BackingSourceTests.ReadThru.Bulk
 
             IDictionary<string, Product>? items = Cache.GetBulk<Product>(halfKeys, GetReadThruForcedOptions());
 
-            VerifyItemsObtainedFromReadThru(items);
+            VerifyItemsObtainedFromBackingSource(items);
 
             foreach (var key in halfKeys)
             {
@@ -247,7 +247,7 @@ namespace BackingSourceTests.ReadThru.Bulk
                 foreach (var key in _keys)
                 {
                     Product refreshed = refreshedItems[key];
-                    VerifyItemObtainedFromReadThru(key, refreshed);
+                    VerifyItemObtainedFromBackingSource(key, refreshed);
                     Assert.That(refreshed, Is.Not.EqualTo(Util.GetProductForCache(key)),
                         $"Resync should have fetched a fresh value for key {key}.");
                 }

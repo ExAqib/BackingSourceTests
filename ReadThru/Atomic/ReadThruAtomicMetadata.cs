@@ -157,7 +157,7 @@ namespace BackingSourceTests.ReadThru.Atomic
             Product refreshed = Cache.Get<Product>(key); //  May cause TypeCast exception from CacheItem to Product
 
             // Assert
-            VerifyItemObtainedFromReadThru(key, refreshed);
+            VerifyItemObtainedFromBackingSource(key, refreshed);
             Assert.That(refreshed, Is.Not.EqualTo(stale), "Resync should have fetched a fresh value from the data source.");
         }
 

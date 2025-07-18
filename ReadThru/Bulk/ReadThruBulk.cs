@@ -40,7 +40,7 @@ namespace BackingSourceTests.ReadThru.Bulk
                 foreach (var key in _keys)
                 {
                     Assert.That(items.ContainsKey(key), Is.True, $"Key {key} should be present in the fetched items.");
-                    VerifyItemObtainedFromReadThru(key, items[key]);
+                    VerifyItemObtainedFromBackingSource(key, items[key]);
                 }
             });
         }
@@ -67,7 +67,7 @@ namespace BackingSourceTests.ReadThru.Bulk
 
                 foreach (var key in _keys.Except(halfKeys))
                 {
-                    VerifyItemObtainedFromReadThru(key, items[key]);
+                    VerifyItemObtainedFromBackingSource(key, items[key]);
                 }
             });
         }
@@ -88,10 +88,10 @@ namespace BackingSourceTests.ReadThru.Bulk
             {
                 foreach (var key in _keys)
                 {
-                    VerifyItemObtainedFromReadThru(key, freshItems[key]);
+                    VerifyItemObtainedFromBackingSource(key, freshItems[key]);
 
                     var refreshed = Cache.Get<Product>(key);
-                    VerifyItemObtainedFromReadThru(key, refreshed);
+                    VerifyItemObtainedFromBackingSource(key, refreshed);
                 }
             });
         }
@@ -140,7 +140,7 @@ namespace BackingSourceTests.ReadThru.Bulk
             Assert.That(getBulkResult[ReadThruCacheCommunication.ReadThruExceptionKey], Is.Null);
 
             getBulkResult.Remove(ReadThruCacheCommunication.ReadThruExceptionKey);
-            VerifyItemsObtainedFromReadThru(getBulkResult);
+            VerifyItemsObtainedFromBackingSource(getBulkResult);
         }
 
         [Test]
@@ -154,7 +154,7 @@ namespace BackingSourceTests.ReadThru.Bulk
             Assert.That(getBulkResult.Count, Is.EqualTo(_keys.Length - 1), "Null-returning key should be excluded.");
             Assert.That(getBulkResult[ReadThruCacheCommunication.ReadThruExceptionKey], Is.Null);
 
-            VerifyItemsObtainedFromReadThru(getBulkResult);
+            VerifyItemsObtainedFromBackingSource(getBulkResult);
         }
 
         [Test]

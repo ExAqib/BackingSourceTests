@@ -41,7 +41,7 @@ namespace BackingSourceTests.ReadThru.Atomic
         public void GetItem_WhenNotInCache_FetchesFromDataSource()
         {
             Product product = Cache.Get<Product>(_key, GetReadThruOptions());
-            VerifyItemObtainedFromReadThru(_key, product);
+            VerifyItemObtainedFromBackingSource(_key, product);
         }
 
         [Test]
@@ -58,7 +58,7 @@ namespace BackingSourceTests.ReadThru.Atomic
         public void GetItem_WithDefaultReadThruOptions_FetchesFromDataSource()
         {
             Product product = Cache.Get<Product>(_key, GetDefaultReadThruOptions());
-            VerifyItemObtainedFromReadThru(_key, product);
+            VerifyItemObtainedFromBackingSource(_key, product);
         }
 
         [Test]
@@ -101,10 +101,10 @@ namespace BackingSourceTests.ReadThru.Atomic
             Cache.Insert(_key, stale);
 
             Product freshProduct = Cache.Get<Product>(_key, GetReadThruForcedOptions());
-            VerifyItemObtainedFromReadThru(_key, freshProduct);
+            VerifyItemObtainedFromBackingSource(_key, freshProduct);
 
             Product fromCache = Cache.Get<Product>(_key);
-            VerifyItemObtainedFromReadThru(_key, fromCache);
+            VerifyItemObtainedFromBackingSource(_key, fromCache);
 
             Assert.That(stale, Is.Not.EqualTo(fromCache));
         }
@@ -113,10 +113,10 @@ namespace BackingSourceTests.ReadThru.Atomic
         public void GetItem_WithReadThruForced_WhenMissing_FetchesAndCachesFromDataSource()
         {
             Product product = Cache.Get<Product>(_key, GetReadThruForcedOptions());
-            VerifyItemObtainedFromReadThru(_key, product);
+            VerifyItemObtainedFromBackingSource(_key, product);
 
             Product fromCache = Cache.Get<Product>(_key);
-            VerifyItemObtainedFromReadThru(_key, fromCache);
+            VerifyItemObtainedFromBackingSource(_key, fromCache);
         }
 
         [Test]

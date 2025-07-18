@@ -85,36 +85,7 @@ namespace BackingSourceTests.ReadThru
                 ResyncOptions = GetResyncOptions()
             };
         }
-
-        public string[] GetHalfKeys(string[] keys)
-        {
-            var half = keys.Take(keys.Length / 2).ToArray();
-            return half;
-        }
-
-        public string UpdateKeyWith(string key, string updatedValue)
-        {
-            return string.Join( Tilda ,[key, updatedValue]);
-        }
-
-        public string[] UpdateKeysWith(string[] keys, string updatedValue)
-        {
-            string[] updatedKeys = new string[keys.Length];
-
-            for (int i = 0; i < keys.Length; i++)
-            {
-                updatedKeys[i] = UpdateKeyWith(keys[i],updatedValue);
-            }
-
-            return updatedKeys;
-        }
-
-        public string[] GetUpdatedHalfKeys(string[] keys, string updatedMessage)
-        {
-            var halfKeys = GetHalfKeys(keys);
-            var updatedKeys = UpdateKeysWith(halfKeys, updatedMessage);
-            return updatedKeys;
-        }
+               
 
         public void PerformAddBulk(string[] keys)
         {
@@ -129,12 +100,7 @@ namespace BackingSourceTests.ReadThru
 
             Cache.AddBulk(items);
         }
-
-        private CacheItem GetCacheItem(Product product)
-        {
-            var cacheItem = new CacheItem(product);
-            return cacheItem;
-        }
+                
 
         public void PerformAddBulkWithResyncOptions(string[] keys)
         {
