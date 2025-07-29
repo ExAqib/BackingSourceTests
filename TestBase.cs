@@ -16,19 +16,25 @@ namespace BackingSourceTests
     #endregion */
     internal class TestBase
     {
-        public ICache Cache { get; set; }
+        #region Configurations
+        public string CacheName = "BackingSourceTests";
+        public virtual string BackingSourceTopicName { get; set;} = "BackingSourceTopic";
+
         public int WriteBehindCompletionWaitTime = 3; // (seconds) Wait time for write-behind completion to ensure data is properly added in cache.
 
-        public string CacheName = "BackingSourceTests";
-        public int CleanInterval = 30; //(seconds) Assign value that is double of actual clean interval to ensure that clean interanval does not interfere with tests.
+        public double PubSubMessageWaitTime = 3;
+        public int CleanInterval = 05; //(seconds) Assign value that is double of actual clean interval to ensure that clean interanval does not interfere with tests.
         public char Tilda = '~';
+        #endregion
 
         #region Constants 
         public const string ReadThruProviderName = "ReadThruProvider";
         public const string WriteThruProviderName = "WriteThruProvider";
         public const string Key = "Product:1";
-        public const string BackingSourceNotAvailable = "Backing source not available.Verify backing source settings.";
+        public const string BackingSourceNotAvailable = "Backing source not available. Verify backing source settings.";
         #endregion
+
+        public ICache Cache { get; set; }
 
         internal TestBase()
         {

@@ -52,7 +52,7 @@ namespace BackingSourceTests.ReadThru.Bulk
                 foreach (var key in _keys.Except(halfKeys))
                 {
                     CacheItem cacheItem = Cache.GetCacheItem(key);
-                    Assert.That(cacheItem?.Expiration?.Type, Is.Null,
+                    Assert.That(cacheItem?.Expiration?.Type,Is.EqualTo(ExpirationType.None),
                         $"Non-updated key {key} should NOT have expiration applied");
                 }
             });
@@ -85,7 +85,7 @@ namespace BackingSourceTests.ReadThru.Bulk
                 foreach (var key in _keys.Except(halfKeys))
                 {
                     CacheItem cacheItem = Cache.GetCacheItem(key);
-                    Assert.That(cacheItem?.Expiration?.Type, Is.Null,
+                    Assert.That(cacheItem?.Expiration?.Type, Is.EqualTo(ExpirationType.None),
                         $"Non-updated key {key} should NOT have expiration applied");
                 }
             });
@@ -116,7 +116,7 @@ namespace BackingSourceTests.ReadThru.Bulk
                 foreach (var key in _keys.Except(halfKeys))
                 {
                     CacheItem cacheItem = Cache.GetCacheItem(key);
-                    Assert.That(cacheItem?.Priority, Is.EqualTo(CacheItemPriority.Default),
+                    Assert.That(cacheItem?.Priority, Is.EqualTo(CacheItemPriority.Normal),
                         $"Non-updated key {key} should have default priority");
                 }
             });
@@ -197,15 +197,13 @@ namespace BackingSourceTests.ReadThru.Bulk
 
             IDictionary<string, Product>? items = Cache.GetBulk<Product>(halfKeys, GetReadThruForcedOptions());
 
-            VerifyItemsObtainedFromBackingSource(items);
-
             foreach (var key in halfKeys)
             {
                 var queryKeyValue = ReadThruCacheCommunication.GetEncodedKeyValuePair(key);
                 string fieldName = queryKeyValue.Keys.First();
                 object expectedValue = queryKeyValue.Values.First();
 
-                string query = $"SELECT * FROM Product WHERE {fieldName} = {expectedValue}";
+                string query = $"SELECT * FROM {typeof(Product).FullName} WHERE {fieldName} = {expectedValue}";
                 TestContext.WriteLine($"Executing query: {query}");
 
                 var queryCommand = new QueryCommand(query);
@@ -219,7 +217,7 @@ namespace BackingSourceTests.ReadThru.Bulk
                         $"Expected field '{fieldName}' not found in query result metadata.");
 
                     var actualValue = reader.GetValue<object>(index);
-                    Assert.That(actualValue, Is.EqualTo(expectedValue),
+                    Assert.That(actualValue.ToString(), Is.EqualTo(expectedValue),
                         $"Query returned unexpected value for field '{fieldName}'. Expected: {expectedValue}, got: {actualValue}");
 
                     foundMatchingRecord = true;

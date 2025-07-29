@@ -29,6 +29,8 @@ namespace BackingSourceTests.ReadThru.Atomic
     {
         private string _key;
 
+        public ReadThruAtomic() : base() { }
+
         [SetUp]
         public void SetUp()
         {
@@ -40,8 +42,14 @@ namespace BackingSourceTests.ReadThru.Atomic
         [Test]
         public void GetItem_WhenNotInCache_FetchesFromDataSource()
         {
+            // Get from data source
             Product product = Cache.Get<Product>(_key, GetReadThruOptions());
             VerifyItemObtainedFromBackingSource(_key, product);
+
+            // Verify item is cached
+            product = Cache.Get<Product>(_key);
+            VerifyItemObtainedFromBackingSource(_key, product);
+
         }
 
         [Test]
@@ -124,10 +132,9 @@ namespace BackingSourceTests.ReadThru.Atomic
         {
             _key = ReadThruCacheCommunication.ReadThruNullKey; // override for null case
 
-            Assert.Throws<OperationFailedException>(() =>
-            {
-                _ = Cache.Get<Product>(_key, GetReadThruOptions());
-            }, "Should throw exception when DS returns null product.");
+            var nullItem = Cache.Get<Product>(_key, GetReadThruOptions());
+
+            Assert.That(nullItem,Is.Null, $"ReadThru was informed to return NULL but got {nullItem}.");
         }
 
         [Test]

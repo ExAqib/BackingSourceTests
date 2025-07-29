@@ -6,6 +6,11 @@ namespace BackingSourceTests.ReadThru
 {
     internal class ReadThruBase : TestBase
     {
+
+        internal ReadThruBase():base()
+        {
+        }
+
         public static ReadThruOptions GetReadThruOptions()
         {
             ReadThruOptions readThruOptions = new()
@@ -48,6 +53,7 @@ namespace BackingSourceTests.ReadThru
 
             return readThruOptions;
         }
+
         public static ReadThruOptions GetNoneReadThruOptions()
         {
             ReadThruOptions readThruOptions = new()

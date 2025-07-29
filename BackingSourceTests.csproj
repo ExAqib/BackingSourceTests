@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Alachisoft.NCache.SDK" Version="5.3.5.1" />
+    <PackageReference Include="Alachisoft.NCache.SDK" Version="5.4.0" />
     <PackageReference Include="coverlet.collector" Version="6.0.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
     <PackageReference Include="NUnit" Version="3.14.0" />
@@ -18,6 +18,12 @@
     <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
   </ItemGroup>
 
+	<PropertyGroup>
+		<ThreadPoolMinThreads>100</ThreadPoolMinThreads>
+		<UseWindowsThreadPool>true</UseWindowsThreadPool>
+		<EnableUnsafeBinaryFormatterSerialization>true</EnableUnsafeBinaryFormatterSerialization>
+	</PropertyGroup>
+	
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj" />
   </ItemGroup>
