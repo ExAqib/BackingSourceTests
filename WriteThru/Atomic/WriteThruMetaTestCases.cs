@@ -22,7 +22,35 @@ namespace BackingSourceTests.WriteThru.Atomic
         public void OneTimeSetUp()
         {
             File.WriteAllText(WriteThruCommunication.WRITE_THRU_SHARED_FILE, string.Empty);
-        }     
+        }
+
+        [TestCase(WriteThru)]
+        [TestCase(WriteThru, true)]
+        [TestCase(WriteBehind)]
+        [TestCase(WriteBehind, true)]
+        public void WriteThruMeta_WithAbsoluteExpiration_SuccesfullyReceivedByProvider(string mode, bool preAdd = false)
+        {
+            // ✅ Arrange  
+            string metaKey = WriteThruCommunication.KeyForAbsoluteExpiration;
+            var writeThruOptions = GetWriteThruOptions(mode);
+
+            // ✅ Act 
+            if (preAdd)
+            {
+                Cache.Add(metaKey, GetProductForAbsoluteExpirationVerification(metaKey));
+                Cache.Insert(metaKey, GetProductForAbsoluteExpirationVerification(metaKey), writeThruOptions);
+            }
+            else
+                Cache.Add(metaKey, GetProductForAbsoluteExpirationVerification(metaKey), writeThruOptions);
+
+            WaitForWriteBehindCompletionIfNeeded(mode);
+            Thread.Sleep(TimeSpan.FromSeconds(WriteThruFileWriteWaitTime));
+
+
+            // ✅ Assert
+            Assert.That(VerifyMessageWritten(WriteThruCommunication.AbsoluteExpirationVerifiedMessage), Is.True, "WriteThru Provider did not write absolute expiration info to shared file.");
+            AssertForWriteThruAbsoluteExpiration(metaKey, Cache.GetCacheItem(metaKey));                      
+        }
 
 
         [TestCase(WriteThru)]
@@ -51,45 +79,33 @@ namespace BackingSourceTests.WriteThru.Atomic
             Thread.Sleep(TimeSpan.FromSeconds(WriteThruFileWriteWaitTime));
 
             // ✅ Assert
+            Assert.That(VerifyMessageWritten(WriteThruCommunication.BulkMetaVerifiedMessage), Is.True, "WriteThru Provider did not write meta info to shared file.");
+            AssertWriteThruMetaBulk(metaKey, Cache.GetCacheItem(metaKey));
 
-            Assert.Multiple(() => 
-            {
-                Assert.That(VerifyBulkMetaInfoWritten(), Is.True, "WriteThru Provider did not write meta info to shared file.");
-                Assert.That(Cache.GetCacheItem(metaKey), Is.Not.Null, "Cache item should not be null after WriteThru operation.");
-                Assert.That(Cache.GetCacheItem(metaKey).Expiration, Is.Not.Null, "Cache item expiration should not be null after WriteThru operation.");
-                Assert.That(Cache.GetCacheItem(metaKey).Expiration.Type, Is.EqualTo(ExpirationType.Sliding), "Cache item expiration should be sliding after WriteThru operation.");
-                Assert.That(Cache.GetCacheItem(metaKey).Priority, Is.EqualTo(WriteThruCommunication.ItemPriority), "Cache item priority should not be changed after WriteThru operation.");
-                Assert.That(Cache.GetCacheItem(metaKey).Tags?.First()?.TagName, Is.EqualTo(WriteThruCommunication.TagName), "Cache item tags should not be changed after WriteThru operation.");
-                Assert.That(Cache.GetCacheItem(metaKey).NamedTags, Is.Not.Null, "Cache item named tags should not be null after WriteThru operation.");
-            });
         }
 
-        public bool VerifyBulkMetaInfoWritten()
+        #region Helper Methods 
+
+        public bool VerifyMessageWritten(string message)
         {
             var lines = File.ReadAllLines(WriteThruCommunication.WRITE_THRU_SHARED_FILE);
 
-            if (lines == null || lines.Length == 0)            
+            if (lines == null || lines.Length == 0)
                 return false;
-            
+
 
             var lastLine = lines.Last();
-            return lastLine.Contains(WriteThruCommunication.BulkMetaVerifiedMessage);
-        }
+            return lastLine.Contains(message);
+        }       
 
         private CacheItem GetProductForMetaVerificationBulk(string metaKey)
         {
             var product = Util.GetProductForCache(metaKey);
             CacheItem = GetCacheItem(product);
-
-            CacheItem.Priority = WriteThruCommunication.ItemPriority;
-            CacheItem.Expiration = new Expiration(ExpirationType.Sliding, TimeSpan.FromMinutes(WriteThruCommunication.SlidingExpirationTime));
-            CacheItem.Tags = [new Tag(WriteThruCommunication.TagName)];
-
-            var namedTagDictionary = new NamedTagsDictionary();
-            namedTagDictionary.Add(WriteThruCommunication.NamedTagKey,WriteThruCommunication.NamedTagValue);
-            CacheItem.NamedTags = namedTagDictionary;
+            SetBulkMetaInfoForWriteThruVerification(CacheItem);         
 
             return CacheItem;
-        }
+        }       
+        #endregion
     }
 }

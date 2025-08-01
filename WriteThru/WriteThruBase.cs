@@ -1,6 +1,7 @@
 ﻿using Alachisoft.NCache.Client;
 using Alachisoft.NCache.Runtime.Caching;
 using Common;
+using Common.WriteThru;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,6 +20,7 @@ namespace BackingSourceTests.WriteThru
         public WriteThruBase() : base()
         {
         }
+
         public ITopic Topic { get; set; }
 
         public IList<string> Messages = new List<string>();
@@ -106,17 +108,73 @@ namespace BackingSourceTests.WriteThru
         }
 
 
-        public void OnMessgeReceived(object sender, MessageEventArgs args)
+        public CacheItem GetProductForAbsoluteExpirationVerification(string metaKey)
         {
-            string message = args.Message.Payload as string;
-            Messages.Add(message);
+            var product = Util.GetProductForCache(metaKey);
+            CacheItem = GetCacheItem(product);
+            SetAbsoluteExpirationForWriteThruVerification(CacheItem);
+
+            return CacheItem;
         }
 
-        public bool VerifyMessageReceived(string message)
+        public void SetAbsoluteExpirationForWriteThruVerification(CacheItem cacheItem)
         {
-            Thread.Sleep(TimeSpan.FromSeconds(base.PubSubMessageWaitTime));
-
-            return Messages.Remove(message);           
+            cacheItem.Expiration = new Expiration(ExpirationType.Absolute, TimeSpan.FromMinutes(WriteThruCommunication.AbsoluteExpirationTime));
         }
+
+        public void SetBulkMetaInfoForWriteThruVerification(CacheItem cacheItem)
+        {
+            cacheItem.Priority = WriteThruCommunication.ItemPriority;
+            cacheItem.Expiration = new Expiration(ExpirationType.Sliding, TimeSpan.FromMinutes(WriteThruCommunication.SlidingExpirationTime));
+            cacheItem.Tags = [new Tag(WriteThruCommunication.TagName)];
+
+            var namedTagDictionary = new NamedTagsDictionary();
+            namedTagDictionary.Add(WriteThruCommunication.NamedTagKey, WriteThruCommunication.NamedTagValue);
+            cacheItem.NamedTags = namedTagDictionary;
+        }
+
+
+        public void AssertForWriteThruAbsoluteExpiration(string key, CacheItem item)
+        {
+            
+            Assert.That(item, Is.Not.Null,
+                $"Cache item for key '{key}' should not be null after WriteThru operation.");
+
+            Assert.That(item.Expiration, Is.Not.Null,
+                $"Cache item expiration for key '{key}' should not be null after WriteThru operation.");
+
+            Assert.That(item.Expiration.Type, Is.EqualTo(ExpirationType.Absolute),
+                $"Cache item expiration type for key '{key}' should be absolute after WriteThru operation.");
+
+            var actualMinutes = item.Expiration.ExpireAfter.TotalMinutes;
+            var expected = WriteThruCommunication.AbsoluteExpirationTime;
+            Assert.That(actualMinutes, Is.InRange(expected - 1, expected + 1),
+                $"Cache item expiration for key '{key}' should be approximately {expected} minutes, but was {actualMinutes}.");
+            
+        }
+
+        public void AssertWriteThruMetaBulk(string key, CacheItem item)
+        {
+           
+            Assert.That(item, Is.Not.Null,
+                $"Cache item for key '{key}' should not be null after WriteThru operation.");
+
+            Assert.That(item.Expiration, Is.Not.Null,
+                $"Cache item expiration for key '{key}' should not be null after WriteThru operation.");
+
+            Assert.That(item.Expiration.Type, Is.EqualTo(ExpirationType.Sliding),
+                $"Cache item expiration type for key '{key}' should be sliding after WriteThru operation.");
+
+            Assert.That(item.Priority, Is.EqualTo(WriteThruCommunication.ItemPriority),
+                $"Cache item priority for key '{key}' should be '{WriteThruCommunication.ItemPriority}' after WriteThru operation.");
+
+            Assert.That(item.Tags?.First()?.TagName, Is.EqualTo(WriteThruCommunication.TagName),
+                $"Cache item tag name for key '{key}' should be '{WriteThruCommunication.TagName}' after WriteThru operation.");
+
+            Assert.That(item.NamedTags, Is.Not.Null,
+                $"Cache item named tags for key '{key}' should not be null after WriteThru operation.");
+           
+        }
+
     }
 }

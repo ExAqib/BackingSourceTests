@@ -23,6 +23,7 @@ namespace BackingSourceTests
         public int CleanInterval = 05 + 05; //(seconds) Assign value that is double of actual clean interval to ensure that clean interanval does not interfere with tests.
         public char Tilda = '~';
         public int WriteThruFileWriteWaitTime = 10; // (seconds) Wait time for WriteThru file write to ensure that data is properly written in file.
+        // Add file path for write thru provider  in WriteThruCommunication.cs
         #endregion
 
         #region Constants 

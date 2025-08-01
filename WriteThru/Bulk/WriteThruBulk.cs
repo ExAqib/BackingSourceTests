@@ -12,7 +12,7 @@ namespace BackingSourceTests.WriteThru.Bulk
 {
 
     [TestFixture]
-    class WriteThruBulk : WriteThruBase
+    class WriteThruBulk : WriteThruBulkBase
     {
         private Dictionary<string, CacheItem> _items;
         private Dictionary<string, Product> _products;
@@ -29,39 +29,11 @@ namespace BackingSourceTests.WriteThru.Bulk
             Result = null;
         }
 
-        private Dictionary<string, CacheItem> CreateSampleItems(int count)
-        {
-            var dict = new Dictionary<string, CacheItem>();
-            for (int i = 0; i < count; i++)
-            {
-                var key = GetRandomKey();
-                var product = Util.GetProductForCache(key);
-                dict[key] = GetCacheItem(product);
-            }
-            return dict;
-        }
 
-        private Dictionary<string, CacheItem> TransformKeys(
-            Dictionary<string, CacheItem> original,
-            string transformationKey)
+        protected override object BulkAct(string mode, bool preAdd, Dictionary<string, CacheItem> items)
         {
-            return original.Keys.ToDictionary(
-                key => UpdateKeyWith(key, transformationKey),
-                key => original[key]
-            );
-        }
-
-        private void BulkAct(string mode, bool preAdd, Dictionary<string, CacheItem> items)
-        {
-            if (preAdd)
-            {
-                Cache.AddBulk(items);
-                Result = Cache.InsertBulk(items, GetWriteThruOptions(mode));
-            }
-            else
-            {
-                Result = Cache.AddBulk(items, GetWriteThruOptions(mode));
-            }
+            Result = base.BulkAct(mode, preAdd, items) as IDictionary<string,Exception>; 
+            return Result;
         }
 
         private void VerifyCacheUnchanged(Dictionary<string, CacheItem> expectedItems)
