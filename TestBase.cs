@@ -18,13 +18,11 @@ namespace BackingSourceTests
     {
         #region Configurations
         public string CacheName = "BackingSourceTests";
-        public virtual string BackingSourceTopicName { get; set;} = "BackingSourceTopic";
 
         public int WriteBehindCompletionWaitTime = 3; // (seconds) Wait time for write-behind completion to ensure data is properly added in cache.
-
-        public double PubSubMessageWaitTime = 3;
-        public int CleanInterval = 05; //(seconds) Assign value that is double of actual clean interval to ensure that clean interanval does not interfere with tests.
+        public int CleanInterval = 05 + 05; //(seconds) Assign value that is double of actual clean interval to ensure that clean interanval does not interfere with tests.
         public char Tilda = '~';
+        public int WriteThruFileWriteWaitTime = 10; // (seconds) Wait time for WriteThru file write to ensure that data is properly written in file.
         #endregion
 
         #region Constants 

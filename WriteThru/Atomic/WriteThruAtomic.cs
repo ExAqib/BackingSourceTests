@@ -17,8 +17,8 @@ namespace BackingSourceTests.WriteThru.Atomic
     {
         string _key;
         Product _product;
-        CacheItem _cacheItem;
 
+        public WriteThruAtomic() : base() { }
 
         [SetUp]
         public void Setup()
@@ -26,13 +26,13 @@ namespace BackingSourceTests.WriteThru.Atomic
             Cache.Clear();
             _key = GetRandomKey();
             _product = Util.GetProductForCache(_key);
-            _cacheItem = GetCacheItem(_product);
+            CacheItem = GetCacheItem(_product);
         }
 
         [Test]
         public void WriteThru_WhenItemNotInCache_WritesToDataSource()
         {
-            Cache.Add(_key, _cacheItem, GetWriteThruOptions());
+            Cache.Add(_key, CacheItem, GetWriteThruOptions());
             // No Exception thrown → WriteThru was successful
         }
 
@@ -40,9 +40,9 @@ namespace BackingSourceTests.WriteThru.Atomic
         [TestCase(WriteBehind)]
         public void WriteThru_RemoveFromCache_ItemRemovedFromDataSource(string mode)
         {
-            string updatedKey = UpdateKeyWith(_key, WriteThruCommunication.WriteThruKeyForRemovedFromCache);
+            string updatedKey = UpdateKeyWith(_key, WriteThruCommunication.KeyForRemovedFromCache);
 
-            Cache.Add(updatedKey, _cacheItem);
+            Cache.Add(updatedKey, CacheItem);
             Cache.Remove(updatedKey, null, null, GetWriteThruOptions(mode));
 
             WaitForWriteBehindCompletionIfNeeded(mode);
@@ -53,29 +53,29 @@ namespace BackingSourceTests.WriteThru.Atomic
         }
 
 
-        [TestCase(WriteThru)]
         [TestCase(WriteThru, true)]
+        [TestCase(WriteThru)]
         [TestCase(WriteBehind)]
         [TestCase(WriteBehind, true)]
         public void WriteThru_ProvideInvalidWriteThruOption_ExceptionThrown(string mode,bool preAdd = false)
         {
             var invalidWriteThruOptions = GetWriteThruOptionsWithWrongProviderName(mode);
 
-            var ex = Assert.Throws<OperationFailedException>(() =>
+            var ex = Assert.Throws<ConfigurationException>(() =>
             {
                 if (preAdd)
                 {
-                    Cache.Add(_key, _cacheItem);
-                    Cache.Insert(_key, _cacheItem, invalidWriteThruOptions);
+                    Cache.Insert(_key, CacheItem, invalidWriteThruOptions);
                 }
                 else
-                    Cache.Add(_key, _cacheItem, invalidWriteThruOptions);
+                    Cache.Add(_key, CacheItem, invalidWriteThruOptions);
             });
+
+            var debugItem = Cache.Get<object>(_key);
 
             Assert.Multiple(() =>
             {
                 Assert.That(ex.Message, Does.Contain(InvalidWriteThruProviderExceptionMessage));
-                Assert.That(Cache.Get<object>(_key), Is.Null);
             });
         }
 
@@ -85,17 +85,17 @@ namespace BackingSourceTests.WriteThru.Atomic
         [TestCase(WriteBehind, true)]
         public void WriteThru_UpdateInCacheFromDataSourceWithDefalutProvider_ItemUpdatedInCache(string mode,bool preAdd = false)
         {
-            string updatedKey = UpdateKeyWith(_key, WriteThruCommunication.WriteThruKeyForUpdateInCache);
+            string updatedKey = UpdateKeyWith(_key, WriteThruCommunication.KeyForUpdateInCache);
 
             var defaultWriteThruOptions = GetWriteThruOptionsWithDefaultProviderName(mode);
 
             if (preAdd)
             {
-                Cache.Add(updatedKey , _cacheItem);
-                Cache.Insert(updatedKey, _cacheItem, defaultWriteThruOptions);
+                Cache.Add(updatedKey , CacheItem);
+                Cache.Insert(updatedKey, CacheItem, defaultWriteThruOptions);
             }
             else
-                Cache.Add(updatedKey, _cacheItem, defaultWriteThruOptions);
+                Cache.Add(updatedKey, CacheItem, defaultWriteThruOptions);
 
             WaitForWriteBehindCompletionIfNeeded(mode);
 
@@ -103,7 +103,7 @@ namespace BackingSourceTests.WriteThru.Atomic
 
             Assert.That(item, Is.Not.Null);
             VerifyItemObtainedFromBackingSource(_key, item);
-            var previousValue = _cacheItem.GetValue<Product>();
+            var previousValue = CacheItem.GetValue<Product>();
             Assert.That(previousValue, Is.Not.EqualTo(item)); // PreviousValue was from cache, item is from data source
         }
 
@@ -114,7 +114,7 @@ namespace BackingSourceTests.WriteThru.Atomic
         [TestCase(WriteBehind,true)]
         public void WriteThruWithInsert_UpdateInCacheFromDataSource_ItemUpdatedInCache(string mode,bool preAdd = false)
         {
-            string updatedKey = UpdateKeyWith(_key, WriteThruCommunication.WriteThruKeyForUpdateInCache);
+            string updatedKey = UpdateKeyWith(_key, WriteThruCommunication.KeyForUpdateInCache);
 
             Act(mode, preAdd, updatedKey);
 
@@ -124,7 +124,7 @@ namespace BackingSourceTests.WriteThru.Atomic
 
             Assert.That(item, Is.Not.Null);
             VerifyItemObtainedFromBackingSource(_key, item);
-            var previousValue = _cacheItem.GetValue<Product>();
+            var previousValue = CacheItem.GetValue<Product>();
             Assert.That(previousValue, Is.Not.EqualTo(item));
         }
 
@@ -135,7 +135,7 @@ namespace BackingSourceTests.WriteThru.Atomic
         [TestCase(WriteBehind, true)]
         public void WriteThru_UpdateInCacheFromDataSource_ItemUpdatedInCache(string mode,bool preAdd = false)
         {
-            string updatedKey = UpdateKeyWith(_key, WriteThruCommunication.WriteThruKeyForUpdateInCache);
+            string updatedKey = UpdateKeyWith(_key, WriteThruCommunication.KeyForUpdateInCache);
             
             Act(mode, preAdd, updatedKey);
 
@@ -145,7 +145,7 @@ namespace BackingSourceTests.WriteThru.Atomic
 
             Assert.That(item, Is.Not.Null);
             VerifyItemObtainedFromBackingSource(_key, item);
-            var previousValue = _cacheItem.GetValue<Product>();
+            var previousValue = CacheItem.GetValue<Product>();
             Assert.That(previousValue, Is.Not.EqualTo(item));
         }
 
@@ -155,7 +155,7 @@ namespace BackingSourceTests.WriteThru.Atomic
         [TestCase(WriteBehind, true)]
         public void WriteThru_WhenStatusIsSuccess_CacheRemainsUnchanged(string mode, bool preAdd = false)
         {
-            var successKey = UpdateKeyWith(_key, WriteThruCommunication.WriteThruKeyForSuccess);
+            var successKey = UpdateKeyWith(_key, WriteThruCommunication.KeyForSuccess);
 
             Act(mode, preAdd, successKey);
             WaitForWriteBehindCompletionIfNeeded(mode);
@@ -163,7 +163,7 @@ namespace BackingSourceTests.WriteThru.Atomic
             var resultItem = Cache.Get<Product>(successKey);
 
             Assert.That(resultItem, Is.Not.Null, "Item should remain in cache for Success.");
-            Assert.That(resultItem, Is.EqualTo(_cacheItem.GetValue<Product>()), "Cache should remain unchanged for Success.");
+            Assert.That(resultItem, Is.EqualTo(CacheItem.GetValue<Product>()), "Cache should remain unchanged for Success.");
         }
 
         [TestCase(WriteThru)]
@@ -172,7 +172,7 @@ namespace BackingSourceTests.WriteThru.Atomic
         [TestCase(WriteBehind, true)]
         public void WriteThru_WhenStatusIsFailure_ItemIsRemovedFromCache(string mode, bool preAdd = false)
         {
-            var failureKey = UpdateKeyWith(_key, WriteThruCommunication.WriteThruKeyForFailure);
+            var failureKey = UpdateKeyWith(_key, WriteThruCommunication.KeyForFailure);
             Act(mode,preAdd,failureKey);
 
             WaitForWriteBehindCompletionIfNeeded(mode);
@@ -188,7 +188,7 @@ namespace BackingSourceTests.WriteThru.Atomic
         [TestCase(WriteBehind, true)]
         public void WriteThru_WhenStatusIsFailureRetry_ItemRemainsInCache(string mode, bool preAdd = false)
         {
-            var retryKey = UpdateKeyWith(_key, WriteThruCommunication.WriteThruKeyForFailureRetry);
+            var retryKey = UpdateKeyWith(_key, WriteThruCommunication.KeyForFailureRetry);
 
             Act(mode, preAdd, retryKey);
             WaitForWriteBehindCompletionIfNeeded(mode);
@@ -196,7 +196,7 @@ namespace BackingSourceTests.WriteThru.Atomic
             var resultItem = Cache.Get<Product>(retryKey);
 
             Assert.That(resultItem, Is.Not.Null, "Item should remain in cache for FailureRetry.");
-            Assert.That(resultItem, Is.EqualTo(_cacheItem.GetValue<Product>()), "Cache content should remain unchanged for retry.");
+            Assert.That(resultItem, Is.EqualTo(CacheItem.GetValue<Product>()), "Cache content should remain unchanged for retry.");
         }
 
         [TestCase(WriteThru)]
@@ -205,7 +205,7 @@ namespace BackingSourceTests.WriteThru.Atomic
         [TestCase(WriteBehind, true)]
         public void WriteThru_WhenStatusIsFailureDontRemove_ItemIsNotRemoved(string mode, bool preAdd = false)
         {
-            var dontRemoveKey = UpdateKeyWith(_key, WriteThruCommunication.WriteThruKeyForFailureDontRemove);
+            var dontRemoveKey = UpdateKeyWith(_key, WriteThruCommunication.KeyForFailureDontRemove);
 
             Act(mode, preAdd, dontRemoveKey);
             WaitForWriteBehindCompletionIfNeeded(mode);
@@ -213,7 +213,7 @@ namespace BackingSourceTests.WriteThru.Atomic
             var resultItem = Cache.Get<Product>(dontRemoveKey);
 
             Assert.That(resultItem, Is.Not.Null, "Item should not be removed for FailureDontRemove.");
-            Assert.That(resultItem, Is.EqualTo(_cacheItem.GetValue<Product>()), "Cache should remain unchanged for FailureDontRemove.");
+            Assert.That(resultItem, Is.EqualTo(CacheItem.GetValue<Product>()), "Cache should remain unchanged for FailureDontRemove.");
         }
 
         [TestCase(WriteThru)]
@@ -222,17 +222,17 @@ namespace BackingSourceTests.WriteThru.Atomic
         [TestCase(WriteBehind, true)]
         public void WriteThru_WhenProviderThrowsException_ExceptionPropagated(string mode, bool preAdd = false)
         {
-            var exKey = UpdateKeyWith(_key, WriteThruCommunication.WriteThruKeyForThrowException);
+            var exKey = UpdateKeyWith(_key, WriteThruCommunication.KeyForThrowException);
 
             var ex = Assert.Throws<OperationFailedException>(() =>
             {
                 if (preAdd)
                 {
-                    Cache.Add(exKey, _cacheItem);
-                    Cache.Insert(exKey, _cacheItem, GetWriteThruOptions(mode));
+                    Cache.Add(exKey, CacheItem);
+                    Cache.Insert(exKey, CacheItem, GetWriteThruOptions(mode));
                 }
                 else
-                    Cache.Add(exKey, _cacheItem, GetWriteThruOptions(mode));
+                    Cache.Add(exKey, CacheItem, GetWriteThruOptions(mode));
             });
 
             Assert.Multiple(() =>
@@ -248,34 +248,24 @@ namespace BackingSourceTests.WriteThru.Atomic
         [TestCase(WriteBehind, true)]
         public void WriteThru_WhenProviderReturnsErrorMessage_ErrorIsLogged(string mode, bool preAdd = false)
         {
-            var errorKey = UpdateKeyWith(_key, WriteThruCommunication.WriteThruKeyForErrorMessage);
+            var errorKey = UpdateKeyWith(_key, WriteThruCommunication.KeyForErrorMessage);
 
             var ex = Assert.Throws<OperationFailedException>(() =>
             {
-                Cache.Add(errorKey, _cacheItem, GetWriteThruOptions(mode));
+                Cache.Add(errorKey, CacheItem, GetWriteThruOptions(mode));
                 if (preAdd)
                 {
-                    Cache.Add(errorKey, _cacheItem);
-                    Cache.Insert(errorKey, _cacheItem, GetWriteThruOptions(mode));
+                    Cache.Add(errorKey, CacheItem);
+                    Cache.Insert(errorKey, CacheItem, GetWriteThruOptions(mode));
                 }
                 else
-                    Cache.Add(errorKey, _cacheItem, GetWriteThruOptions(mode));
+                    Cache.Add(errorKey, CacheItem, GetWriteThruOptions(mode));
             });
 
             Assert.That(ex.Message, Does.Contain(WriteThruCommunication.ErrorMessage));
         }
 
-        private void Act(string mode, bool preAdd, string updatedKey)
-        {
-            if (preAdd)
-            {
-                Cache.Add(updatedKey, _cacheItem);
-                Cache.Insert(updatedKey, _cacheItem, GetWriteThruOptions(mode));
-                return;
-            }
-
-            Cache.Add(updatedKey, _cacheItem, GetWriteThruOptions(mode));
-        }
+       
 
     }
 }

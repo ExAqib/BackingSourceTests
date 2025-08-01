@@ -28,13 +28,15 @@ namespace BackingSourceTests.ReadThru.Atomic
 
             var product = Cache.Get<Product>(key, GetReadThruOptions());
             CacheItem cacheItem = Cache.GetCacheItem(key);
+            
+            TestContext.WriteLine($"CacheItem Expiration Type: {cacheItem?.Expiration?.Type}, ExpireAfter: {cacheItem?.Expiration?.ExpireAfter}");
 
             Assert.Multiple(() =>
             {
                 Assert.That(cacheItem?.Expiration?.Type, Is.Not.Null, "Absolute Expiration set by ReadThru Provider is not working.");
                 Assert.That(cacheItem.Expiration.Type, Is.EqualTo(ExpirationType.Absolute));
                 Assert.That(ReadThruCacheCommunication.IsExpirationIntervalSameAsSetByReadThru(cacheItem.Expiration.ExpireAfter, key),
-                    Is.True, "Expiration interval mismatch between cache and ReadThruProvider");
+                    Is.True, $"Expiration interval mismatch between cache and ReadThruProvider. Obtained expiration time {cacheItem.Expiration.ExpireAfter}");
             });
         }
 

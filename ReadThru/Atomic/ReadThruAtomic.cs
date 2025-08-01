@@ -142,10 +142,13 @@ namespace BackingSourceTests.ReadThru.Atomic
         {
             _key = ReadThruCacheCommunication.ReadThruExceptionKey; // override for exception case
 
-            Assert.Throws<OperationFailedException>(() =>
+            var exception = Assert.Throws<OperationFailedException>(() =>
             {
                 _ = Cache.Get<Product>(_key, GetReadThruOptions());
             }, "Should propagate exception thrown by data source.");
+
+            Assert.That(exception.Message, Does.StartWith(ReadThruCacheCommunication.ReadThruExceptionMessage.Split('.')[0]),
+                "Exception message should match the expected format.");
         }
     }
 

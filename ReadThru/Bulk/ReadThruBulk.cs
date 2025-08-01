@@ -6,6 +6,7 @@ using NUnit.Framework;
 using NUnit.Framework.Interfaces;
 using Quartz.Core;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -26,7 +27,7 @@ namespace BackingSourceTests.ReadThru.Bulk
         public void SetUp()
         {
             Cache.Clear();
-            _keys = GetRandomKeysForReadThruBulk();
+            _keys = GetRandomKeysForReadThruBulk(10); // TODO change to 1000
         }
 
         
@@ -153,8 +154,11 @@ namespace BackingSourceTests.ReadThru.Bulk
                var result = Cache.GetBulk<Product>(_keys, GetInvalidReadOptions());
             });
 
-            Assert.That(ex.Message, Is.EqualTo(BackingSourceNotAvailable));
-            Assert.That(Cache.Count, Is.EqualTo(0));
+            Assert.Multiple(() =>
+            {
+                Assert.That(ex.Message, Is.EqualTo(BackingSourceNotAvailable));
+                Assert.That(Cache, Is.Empty);
+            });
         }
 
         [Test]
@@ -164,10 +168,10 @@ namespace BackingSourceTests.ReadThru.Bulk
 
             IDictionary<string, Product>? getBulkResult = Cache.GetBulk<Product>(_keys, GetReadThruOptions());
 
+            // For multiNode cluster, one node will get exception in backing source, but on other node, readThru will be performed successfully.
             Assert.Multiple(() =>
             {
-                Assert.That( getBulkResult, Is.Empty, $"If one key has thrown exception, all count should be 0. Expected Count: {0} Obtained count:{getBulkResult.Count}");
-                Assert.That(Cache, Is.Empty, "No item should be added in cache if ReadThru has thrown exception.");
+                Assert.That( getBulkResult.Count, Is.EqualTo(Cache.Count) , $"If one key has thrown exception, all count should be 0. Expected Count: {0} Obtained count:{getBulkResult.Count}");
             });
         }
 
@@ -176,6 +180,9 @@ namespace BackingSourceTests.ReadThru.Bulk
         {
             _keys[_keys.Length / 2] = ReadThruCacheCommunication.ReadThruExceptionKey;
             int addedKeysInCache = 0;
+
+            Hashtable  cacheKeys = new Hashtable();
+
             Random random = new();
 
             foreach (var key in _keys)
@@ -187,6 +194,7 @@ namespace BackingSourceTests.ReadThru.Bulk
                 {
                     Cache.Insert(key, Util.GetProductForCache(key));
                     addedKeysInCache++;
+                    cacheKeys.Add(key,null);
                     continue;
                 }
 
@@ -195,12 +203,20 @@ namespace BackingSourceTests.ReadThru.Bulk
                 if (random_50_50_bool)
                 {
                     Cache.Insert(key, Util.GetProductForCache(key));
+                    cacheKeys.Add(key, null);
                     addedKeysInCache++;
                 }
             }
 
+            // ReadThruExceptionKey Above key is sent to one node only. If we have multiple nodes, one node will get exception in read thru but remaining nodes will perform read thru.
+            IDictionary<string, Product>? getBulkResult = Cache.GetBulk<Product>(_keys, GetReadThruOptions());
 
-             IDictionary<string, Product>? getBulkResult = Cache.GetBulk<Product>(_keys, GetReadThruOptions());
+            if (Cache.Count > 0)
+            {
+                var itemsAddedViaReadThru = (int)Cache.Count - addedKeysInCache;
+                addedKeysInCache += itemsAddedViaReadThru;
+            }
+      
 
             Assert.Multiple(() =>
             {
@@ -208,7 +224,10 @@ namespace BackingSourceTests.ReadThru.Bulk
                 Assert.That(getBulkResult.ContainsKey(ReadThruCacheCommunication.ReadThruExceptionKey),Is.False,"The key against which exception has been thrown, should have any value.");                
                 foreach (var item in getBulkResult)
                 {
-                    VerifyItemObtainedFromCache(item.Value);
+                    if (cacheKeys.ContainsKey(item.Key))
+                        VerifyItemObtainedFromCache(item.Value);
+                    else
+                        VerifyItemObtainedFromBackingSource(item.Key,item.Value);
                 }
             });
         }

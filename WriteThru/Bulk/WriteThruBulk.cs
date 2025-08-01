@@ -18,6 +18,8 @@ namespace BackingSourceTests.WriteThru.Bulk
         private Dictionary<string, Product> _products;
         private IDictionary<string, Exception>? Result;
 
+        public WriteThruBulk() : base() { }
+
         [SetUp]
         public void Setup()
         {
@@ -113,7 +115,7 @@ namespace BackingSourceTests.WriteThru.Bulk
         [TestCase(WriteBehind)]
         public void WriteThruBulk_RemoveFromCache_ItemsRemovedFromDataSource(string mode)
         {
-            var removeItems = TransformKeys(_items, WriteThruCommunication.WriteThruKeyForRemovedFromCache);
+            var removeItems = TransformKeys(_items, WriteThruCommunication.KeyForRemovedFromCache);
 
             Cache.AddBulk(removeItems);
             Cache.RemoveBulk(removeItems.Keys.ToArray(), GetWriteThruOptions(mode));
@@ -154,7 +156,7 @@ namespace BackingSourceTests.WriteThru.Bulk
         [TestCase(WriteBehind, true)]
         public void WriteThruBulk_UpdateFromDataSourceWithDefaultProvider_ItemsUpdated(string mode, bool preAdd = false)
         {
-            var updatedItems = TransformKeys(_items, WriteThruCommunication.WriteThruKeyForUpdateInCache);
+            var updatedItems = TransformKeys(_items, WriteThruCommunication.KeyForUpdateInCache);
             var defaultOptions = GetWriteThruOptionsWithDefaultProviderName(mode);
 
             if (preAdd)
@@ -175,7 +177,7 @@ namespace BackingSourceTests.WriteThru.Bulk
         [TestCase(WriteBehind, true)]
         public void WriteThruBulk_WhenStatusIsSuccess_CacheRemainsUnchanged(string mode, bool preAdd = false)
         {
-            var successItems = TransformKeys(_items, WriteThruCommunication.WriteThruKeyForSuccess);
+            var successItems = TransformKeys(_items, WriteThruCommunication.KeyForSuccess);
 
             BulkAct(mode, preAdd, successItems);
             WaitForWriteBehindCompletionIfNeeded(mode);
@@ -189,7 +191,7 @@ namespace BackingSourceTests.WriteThru.Bulk
         [TestCase(WriteBehind, true)]
         public void WriteThruBulk_WhenStatusIsFailure_ItemsRemoved(string mode, bool preAdd = false)
         {
-            var failureItems = TransformKeys(_items, WriteThruCommunication.WriteThruKeyForFailure);
+            var failureItems = TransformKeys(_items, WriteThruCommunication.KeyForFailure);
 
             BulkAct(mode, preAdd, failureItems);
             WaitForWriteBehindCompletionIfNeeded(mode);
@@ -203,7 +205,7 @@ namespace BackingSourceTests.WriteThru.Bulk
         [TestCase(WriteBehind, true)]
         public void WriteThruBulk_WhenStatusIsFailureRetry_ItemsRemainInCache(string mode, bool preAdd = false)
         {
-            var retryItems = TransformKeys(_items, WriteThruCommunication.WriteThruKeyForFailureRetry);
+            var retryItems = TransformKeys(_items, WriteThruCommunication.KeyForFailureRetry);
 
             BulkAct(mode, preAdd, retryItems);
             WaitForWriteBehindCompletionIfNeeded(mode);
@@ -217,7 +219,7 @@ namespace BackingSourceTests.WriteThru.Bulk
         [TestCase(WriteBehind, true)]
         public void WriteThruBulk_WhenStatusIsFailureDontRemove_ItemsNotRemoved(string mode, bool preAdd = false)
         {
-            var dontRemoveItems = TransformKeys(_items, WriteThruCommunication.WriteThruKeyForFailureDontRemove);
+            var dontRemoveItems = TransformKeys(_items, WriteThruCommunication.KeyForFailureDontRemove);
 
             BulkAct(mode, preAdd, dontRemoveItems);
             WaitForWriteBehindCompletionIfNeeded(mode);
@@ -231,7 +233,7 @@ namespace BackingSourceTests.WriteThru.Bulk
         [TestCase(WriteBehind, true)]
         public void WriteThruBulk_WhenProviderThrowsException_ExceptionPropagated(string mode, bool preAdd = false)
         {
-            var exceptionItems = TransformKeys(_items, WriteThruCommunication.WriteThruKeyForThrowException);
+            var exceptionItems = TransformKeys(_items, WriteThruCommunication.KeyForThrowException);
 
             
             BulkAct(mode, preAdd, exceptionItems);
@@ -248,7 +250,7 @@ namespace BackingSourceTests.WriteThru.Bulk
         public void WriteThruBulk_WhenProviderReturnsErrorMessage_ErrorIsLogged(string mode, bool preAdd = false)
         {
             // May be this test case needs to be fixed. 
-            var errorItems = TransformKeys(_items, WriteThruCommunication.WriteThruKeyForErrorMessage);
+            var errorItems = TransformKeys(_items, WriteThruCommunication.KeyForErrorMessage);
 
             var ex = Assert.Throws<OperationFailedException>(() =>
             {
