@@ -71,7 +71,6 @@ namespace BackingSourceTests.WriteThru.Bulk
         }
 
 
-
         #region Helper Methods  
         private void SetBulkMetaInfoInItems()
         {

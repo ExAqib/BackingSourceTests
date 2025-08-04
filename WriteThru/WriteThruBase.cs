@@ -76,7 +76,10 @@ namespace BackingSourceTests.WriteThru
         internal void WaitForWriteBehindCompletionIfNeeded(string mode)
         {
             if (mode.Equals(WriteBehind))
+            {
+                TestContext.WriteLine($"Waiting for {WriteBehindCompletionWaitTime} seconds for WriteBehind completion.");  
                 Thread.Sleep(TimeSpan.FromSeconds(WriteBehindCompletionWaitTime));
+            }
         }
 
         internal WriteThruOptions GetWriteThruOptionsWithWrongProviderName(string mode)

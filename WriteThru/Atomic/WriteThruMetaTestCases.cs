@@ -17,12 +17,15 @@ namespace BackingSourceTests.WriteThru.Atomic
     internal class WriteThruMetaTestCases : WriteThruBase
     {
         public WriteThruMetaTestCases() : base() { }
+      
 
-        [OneTimeSetUp]
-        public void OneTimeSetUp()
+        [SetUp]
+        public void SetUp()
         {
+            Cache.Clear();
             File.WriteAllText(WriteThruCommunication.WRITE_THRU_SHARED_FILE, string.Empty);
         }
+
 
         [TestCase(WriteThru)]
         [TestCase(WriteThru, true)]
