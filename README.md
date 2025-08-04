@@ -1,25 +1,33 @@
-This repository contains unit test cases for NCache backing source. 
-It contains test cases for both ReadThu and WriteThru.
-I have made it public so that my I can share it with my team members. 
-Directory structure:
-└── exaqib-backingsourcetests/
-    ├── BackingSourceTests.csproj
-    ├── BackingSourceTests.sln
-    ├── TestBase.cs
-    ├── ReadThru/
-    │   ├── ReadThruBase.cs
-    │   ├── Atomic/
-    │   │   ├── ReadThruAtomic.cs
-    │   │   └── ReadThruAtomicMetadata.cs
-    │   └── Bulk/
-    │       ├── ReadThruBulk.cs
-    │       └── ReadThruBulkMetadata.cs
-    └── WriteThru/
-        ├── WriteThruBase.cs
-        ├── Atomic/
-        │   ├── WriteThruAtomic.cs
-        │   └── WriteThruMetaTestCases.cs
-        └── Bulk/
-            ├── WriteThruBulk.cs
-            ├── WriteThruBulkBase.cs
-            └── WriteThruBulkMeta.cs
+# 🧪 NCache Backing Source Unit Tests
+
+This repository contains a comprehensive suite of unit tests for validating **Backing Source operations** in [NCache](https://www.alachisoft.com/ncache/). It includes test cases for both **ReadThru** and **WriteThru** scenarios, covering atomic and bulk operations with metadata verification.
+
+> 🔓 **Public repo** — shared for collaboration with team members.
+
+---
+
+## ✅ What's Covered?
+
+- ✔️ ReadThru & WriteThru tests
+- ✔️ Atomic & Bulk test cases
+- ✔️ Metadata validation (expiration, priority, tags, etc.)
+- ✔️ Base classes for test reuse
+- ✔️ Shared file logging for debugging
+
+---
+
+## 🛠️ Technologies
+
+- **.NET 6 / .NET 8**
+- **NUnit**
+- **NCache 5.3 SP5**
+- **C# 10+**
+
+---
+
+## 🤝 Collaboration
+
+Feel free to clone, fork, or submit a PR. This is a **work-in-progress** repo intended for internal testing and learning.  
+Let’s make NCache testing easier and smarter — together!
+
+---
