@@ -11,6 +11,8 @@ using Alachisoft.NCache.Client;
 namespace BackingSourceTests.WriteThru.Bulk
 {
 
+    // ALL TEST CASES ARE TESTED EXCEPT FOT ALL BULK WRITE THRU CASES. THIS IS BECAUSE OTHER TEAM MEMBER WAS COMPLETING THE BULK WRITE THRU FEATURE.
+
     [TestFixture]
     class WriteThruBulk : WriteThruBulkBase
     {
