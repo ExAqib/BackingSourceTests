@@ -56,15 +56,16 @@ namespace BackingSourceTests.WriteThru.Atomic
         }
 
 
-        [TestCase(WriteThru, true)]
+        // [TestCase(WriteThru, true)]
         [TestCase(WriteThru)]
         [TestCase(WriteBehind)]
         [TestCase(WriteBehind, true)]
         public void WriteThru_ProvideInvalidWriteThruOption_ExceptionThrown(string mode,bool preAdd = false)
         {
             var invalidWriteThruOptions = GetWriteThruOptionsWithWrongProviderName(mode);
+            //var ex = Assert.Throws<ConfigurationException>(() => //for 5.4 & above 
 
-            var ex = Assert.Throws<ConfigurationException>(() =>
+            var ex = Assert.Throws<OperationFailedException>(() =>
             {
                 if (preAdd)
                 {
@@ -81,6 +82,33 @@ namespace BackingSourceTests.WriteThru.Atomic
                 Assert.That(ex.Message, Does.Contain(InvalidWriteThruProviderExceptionMessage));
             });
         }
+
+        [TestCase(WriteThru, true)]
+        public void WriteThruWIthInsert_ProvideInvalidWriteThruOption_ExceptionThrown(string mode, bool preAdd = false)
+        {
+            // for 5.3 & below , we have ConfigurationException
+            var invalidWriteThruOptions = GetWriteThruOptionsWithWrongProviderName(mode);
+
+            
+            var ex = Assert.Throws<ConfigurationException>(() =>
+            {
+                if (preAdd)
+                {
+                    Cache.Insert(_key, CacheItem, invalidWriteThruOptions);
+                }
+                else
+                    Cache.Add(_key, CacheItem, invalidWriteThruOptions);
+            });
+            
+            
+            var debugItem = Cache.Get<object>(_key);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(ex.Message, Does.Contain(InvalidWriteThruProviderExceptionMessage));
+            });
+        }
+
 
         [TestCase(WriteThru)]
         [TestCase(WriteThru, true)]
@@ -105,7 +133,7 @@ namespace BackingSourceTests.WriteThru.Atomic
             var item = Cache.Get<Product>(this._key);
 
             Assert.That(item, Is.Not.Null);
-            VerifyItemObtainedFromBackingSource(this._key, item);
+            VerifyItemObtainedByUpdateInCache(_key, item);
             var previousValue = CacheItem.GetValue<Product>();
             Assert.That(previousValue, Is.Not.EqualTo(item)); // PreviousValue was from cache, item is from data source
         }
@@ -126,7 +154,7 @@ namespace BackingSourceTests.WriteThru.Atomic
             var item = Cache.Get<Product>(_key);
 
             Assert.That(item, Is.Not.Null);
-            VerifyItemObtainedFromBackingSource(_key, item);
+            VerifyItemObtainedByUpdateInCache(_key, item);
             var previousValue = CacheItem.GetValue<Product>();
             Assert.That(previousValue, Is.Not.EqualTo(item));
         }
@@ -147,7 +175,7 @@ namespace BackingSourceTests.WriteThru.Atomic
             var item = Cache.Get<Product>(_key);
 
             Assert.That(item, Is.Not.Null);
-            VerifyItemObtainedFromBackingSource(_key, item);
+            VerifyItemObtainedByUpdateInCache(_key,item);
             var previousValue = CacheItem.GetValue<Product>();
             Assert.That(previousValue, Is.Not.EqualTo(item));
         }

@@ -41,6 +41,29 @@ namespace BackingSourceTests.WriteThru.Bulk
             }
         }
 
-       
+        public void VerifyCacheUnchanged(Dictionary<string, CacheItem> expectedItems)
+        {
+            foreach (var kvp in expectedItems)
+            {
+                var resultItem = Cache.Get<Product>(kvp.Key);
+                Assert.That(resultItem, Is.Not.Null, $"Item [{kvp.Key}] should remain in cache.");
+                Assert.That(resultItem, Is.EqualTo(kvp.Value.GetValue<Product>()), $"Cache content mismatch for [{kvp.Key}].");
+            }
+        }
+
+        public void VerifyCacheUpdatedByBackingSource(Dictionary<string, CacheItem> updatedItems)
+        {
+            foreach (var kvp in updatedItems)
+            {
+                var item = Cache.Get<Product>(kvp.Key);
+                Assert.That(item, Is.Not.Null, $"Item [{kvp.Key}] missing after update.");
+                VerifyItemObtainedByUpdateInCache(kvp.Key, item);
+                //VerifyItemObtainedFromBackingSource(kvp.Key, item);
+
+                var previousValue = kvp.Value.GetValue<Product>();
+                Assert.That(previousValue, Is.Not.EqualTo(item), $"Expected updated value for [{kvp.Key}].");
+            }
+        }
+
     }
 }

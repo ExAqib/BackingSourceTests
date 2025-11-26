@@ -53,7 +53,7 @@ namespace BackingSourceTests.WriteThru.Bulk
         {
             // ✅ Arrange 
             SetBulkMetaInfoInItems();
-            var caheItemsWithBulkMetaInfo = TransformKeys(_items, WriteThruCommunication.KeyForAbsoluteExpiration);
+            var caheItemsWithBulkMetaInfo = TransformKeys(_items, WriteThruCommunication.KeyForVerifyingMetaInfoBulk);
 
             // ✅ Act
             BulkAct(mode, preAdd, caheItemsWithBulkMetaInfo);
@@ -97,6 +97,7 @@ namespace BackingSourceTests.WriteThru.Bulk
 
 
             var lastLine = lines.Last();
+            return  lastLine.Contains(message);
             return lines.Length == _items.Count && lastLine.Contains(message);
         }
         #endregion

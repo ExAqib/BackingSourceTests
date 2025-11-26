@@ -73,7 +73,7 @@ namespace BackingSourceTests.WriteThru
             return provider;
         }
 
-        internal void WaitForWriteBehindCompletionIfNeeded(string mode)
+        internal virtual void WaitForWriteBehindCompletionIfNeeded(string mode)
         {
             if (mode.Equals(WriteBehind))
             {

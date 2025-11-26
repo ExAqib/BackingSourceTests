@@ -1,5 +1,6 @@
 ﻿using Alachisoft.NCache.Client;
 using Common;
+using System.Linq;
 
 
 namespace BackingSourceTests
@@ -17,7 +18,14 @@ namespace BackingSourceTests
     internal class TestBase
     {
         #region Configurations
-        public string CacheName = "BackingSourceTests";
+
+        // README:
+        // UPDATE CLEAN INTERVAL TO 5SEC.update clean interval to 5 seconds.
+        // DEFINE QUERY INDEX FOR ID FIELD IN PRODUCT CLASS.
+        // DEPOLOY BOTH READTHRU AND WRITETHRU PROVIDERS ALONGWITH COMMON.DLL
+        // UPDATE CACHESERVERS, FIELS AND ADD THE CURRENT SERVERS. 
+        public string CacheName = "replicated";//BackingSourceTests, replicated, test , partition
+        public string[] CacheServers = { "20.200.20.46", "20.200.17.61" };
 
         public int WriteBehindCompletionWaitTime = 3; // (seconds) Wait time for write-behind completion to ensure data is properly added in cache.
         public int CleanInterval = 05 + 05; //(seconds) Assign value that is double of actual clean interval to ensure that clean interanval does not interfere with tests.
@@ -50,6 +58,7 @@ namespace BackingSourceTests
             Assert.That(product, Is.Not.Null, $"Product against key `{key}` should not be null when BackingSource is configured.");
             Assert.That(product, Is.EqualTo(Util.GetProductForBackingSource(key)), "Product should match the expected product from BackingSouce.");
         }
+
         public static void VerifyItemObtainedByUpdateInCache(string key, Product product)
         {
             Assert.That(product, Is.Not.Null, $"Product against key `{key}` should not be null when BackingSource is configured for verifying update in cache.");
@@ -58,7 +67,7 @@ namespace BackingSourceTests
 
         public static void VerifyItemsObtainedFromBackingSource(IDictionary<string, Product> getBulkResult)
         {
-            Assert.That(getBulkResult, Is.Not.Null, "Bulk result should not be null when BackingSource is configured.");   
+            Assert.That(getBulkResult, Is.Not.Null, "Bulk result should not be null when BackingSource is configured.");
             foreach (var pair in getBulkResult)
             {
                 VerifyItemObtainedFromBackingSource(pair.Key, pair.Value);
@@ -66,7 +75,7 @@ namespace BackingSourceTests
         }
 
         public static void VerifyItemObtainedFromCache(Product productObtained)
-        { 
+        {
             Assert.Multiple(() =>
             {
                 Assert.That(productObtained, Is.Not.Null, "Item obtained from ReadThru should not be null.");
@@ -74,7 +83,7 @@ namespace BackingSourceTests
                 if (productObtained?.Name != null)
                     Assert.That(ProductNameParser.IsItemObtainedFromCache(productObtained.Name), Is.Not.True);
                 else
-                    throw new ArgumentNullException(nameof(productObtained), "Name of item added to cache should not be null.");                
+                    throw new ArgumentNullException(nameof(productObtained), "Name of item added to cache should not be null.");
             });
         }
 
@@ -124,5 +133,56 @@ namespace BackingSourceTests
             return updatedKeys;
         }
 
+        public void StopSecondNode()
+        {
+            int retries = 3;
+            int retryDelay = 3000;
+            while (retries-- > 0)
+            {
+                try
+                {
+                    CacheManager.StopCache(CacheName, new CacheConnection(CacheServers[1]));
+                    return;
+                }
+                catch (Exception)
+                {
+                    if (retries == 0)
+                        throw;
+                    Thread.Sleep(retryDelay);
+                }
+            }
+        }
+
+        public void StartSecondNode()
+        {
+            int retries = 3;
+            int retryDelay = 3000; // 5 seconds
+            while (retries-- > 0)
+            {
+                try
+                {
+                    CacheManager.StartCache(CacheName, new CacheConnection(CacheServers[1]));
+                    return; // Exit if successful
+                }
+                catch (Exception)
+                {
+                    if (retries == 0)
+                        throw;
+
+                    Thread.Sleep(retryDelay);
+                }
+            }
+        }
+
+        public void AsyncStartNode()
+        {
+            // Expecting that the get bulk call will reach the read thru provider in 2 seconds. Provider with parse the key and will wait for 30 seconds.
+            // In that 30 seconds, start another node to perform state transfer.
+            Task.Delay(2000).ContinueWith(t =>
+            {
+                StartSecondNode();
+            });
+        }
+               
     }
 }

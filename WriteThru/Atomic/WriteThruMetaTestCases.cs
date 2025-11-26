@@ -62,6 +62,9 @@ namespace BackingSourceTests.WriteThru.Atomic
         [TestCase(WriteBehind, true)]
         public void WriteThruMeta_WithBulkMetaInfo_MetaSuccessfulyReceivedByWriteThru(string mode, bool preAdd = false)
         {
+
+            // THis test case fails some times & a exception is thrown that There is a time and/or date difference between the client and server.
+
             // ✅ Arrange  
 
             string metaKey = WriteThruCommunication.KeyForVerifyingMetaInfoBulk;       
