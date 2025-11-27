@@ -23,8 +23,9 @@ namespace BackingSourceTests
         // UPDATE CLEAN INTERVAL TO 5SEC.update clean interval to 5 seconds.
         // DEFINE QUERY INDEX FOR ID FIELD IN PRODUCT CLASS.
         // DEPOLOY BOTH READTHRU AND WRITETHRU PROVIDERS ALONGWITH COMMON.DLL
+        // MAKE SURE PDC IS ACCESSABLE FROM ALL MACHINES AS SOME TEST CASES WILL WRITE THERE.
         // UPDATE CACHESERVERS, FIELS AND ADD THE CURRENT SERVERS. 
-        public string CacheName = "replicated";//BackingSourceTests, replicated, test , partition
+        public string CacheName = "BackingSourceTests";//BackingSourceTests, replicated, test , partition
         public string[] CacheServers = { "20.200.20.46", "20.200.17.61" };
 
         public int WriteBehindCompletionWaitTime = 3; // (seconds) Wait time for write-behind completion to ensure data is properly added in cache.

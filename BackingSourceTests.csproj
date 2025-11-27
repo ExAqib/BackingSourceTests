@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Alachisoft.NCache.SDK" Version="5.4.0" />
+    <PackageReference Include="Alachisoft.NCache.SDK" Version="5.3.7" />
     <PackageReference Include="coverlet.collector" Version="6.0.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
     <PackageReference Include="NUnit" Version="3.14.0" />
@@ -23,10 +23,6 @@
 		<UseWindowsThreadPool>true</UseWindowsThreadPool>
 		<EnableUnsafeBinaryFormatterSerialization>true</EnableUnsafeBinaryFormatterSerialization>
 	</PropertyGroup>
-	
-  <ItemGroup>
-    <ProjectReference Include="..\Common\Common.csproj" />
-  </ItemGroup>
 
   <ItemGroup>
     <Using Include="NUnit.Framework" />
@@ -42,6 +38,10 @@
     <None Update="tls.ncconf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="WriteThru\DataStructures\" />
   </ItemGroup>
 
 </Project>
