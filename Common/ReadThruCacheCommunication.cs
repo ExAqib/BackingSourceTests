@@ -28,8 +28,16 @@ namespace Common
 
         static double _magicNumber = -99.99;
         public const int AcceptableExpirationDeviation = 1; //expiration obtanied from cache may not be exact as set. 
+        internal static readonly long DefaultCounterValue = 958946565;
 
+        #region DataStructure Keys  
 
+        public const string DataStructureKeyForList = "ReadThru|DS|LIST|";
+        public const string DataStructureKeyForDictionary = "ReadThru|DS|DICTIONARY|";
+        public const string DataStructureKeyForQueue = "ReadThru|DS|QUEUE|";
+        public const string DataStructureKeyForCounter = "ReadThru|DS|COUNTER|";
+        public const string DataStructureKeyForSet = "ReadThru|DS|SET|";
+        #endregion
 
         internal static ReadThruCacheCommunicationCases GetCaseForKey(string key)
         {

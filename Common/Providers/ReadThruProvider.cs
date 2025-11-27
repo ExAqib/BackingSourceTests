@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using List = System.Collections.Generic.List<object>;
 
 namespace Common.Providers
 {
@@ -15,7 +16,7 @@ namespace Common.Providers
     {
         public void Init(IDictionary<string, string> parameters, string cacheName)
         {
-           // throw new NotImplementedException();
+            // throw new NotImplementedException();
         }
 
         public void Init(IDictionary parameters, string cacheId)
@@ -25,7 +26,35 @@ namespace Common.Providers
 
         public ProviderDataTypeItem<IEnumerable> LoadDataTypeFromSource(string key, DistributedDataType dataType)
         {
-            throw new NotImplementedException();
+            if (Util.IsDataSourceZeeChangeKey(key))
+                Thread.Sleep(WriteThruCommunication.ZEE_CHANGE_WAIT_TIME_IN_SECONDS * 1000);
+
+            return dataType switch
+            {
+                DistributedDataType.List =>
+                    new ProviderDataTypeItem<IEnumerable>(new List<string> { key }),
+
+                DistributedDataType.Dictionary =>
+                    new ProviderDataTypeItem<IEnumerable>(new Dictionary<string, object> { { key, key } }),
+
+                DistributedDataType.Counter =>
+                    new ProviderDataTypeItem<IEnumerable>(ReadThruCacheCommunication.DefaultCounterValue),
+
+                DistributedDataType.Queue =>
+                    new ProviderDataTypeItem<IEnumerable>(CreateQueue(key)),
+
+                DistributedDataType.Set =>
+                    new ProviderDataTypeItem<IEnumerable>(new HashSet<string> { key }),
+
+                _ => throw new NotSupportedException($"Unsupported data type: {dataType}")
+            };
+        }
+
+        private static Queue<string> CreateQueue(string key)
+        {
+            var q = new Queue<string>();
+            q.Enqueue(key);
+            return q;
         }
 
         public ProviderCacheItem LoadFromSource(string key)
@@ -39,7 +68,7 @@ namespace Common.Providers
                     return null;
 
                 case ReadThruCacheCommunicationCases.ThrowException:
-                    throw new Exception(string.Format(ReadThruCacheCommunication.ReadThruExceptionMessage,key));
+                    throw new Exception(string.Format(ReadThruCacheCommunication.ReadThruExceptionMessage, key));
 
                 case ReadThruCacheCommunicationCases.SetAbsoluteExpiration:
                     providerCacheItem.Expiration = new Expiration(ExpirationType.Absolute, TimeSpan.FromMinutes(ReadThruCacheCommunication.GetExpirationValueFromKey(key)));
@@ -79,16 +108,16 @@ namespace Common.Providers
         {
             var result = new Dictionary<string, ProviderCacheItem>();
 
-            if (keys!=null && keys.Any(k => ReadThruCacheCommunication.GetCaseForKey(k).Equals(ReadThruCacheCommunicationCases.StartNodeForStateTransfer)))
+            if (keys != null && keys.Any(k => ReadThruCacheCommunication.GetCaseForKey(k).Equals(ReadThruCacheCommunicationCases.StartNodeForStateTransfer)))
             {
                 return ZeeChangeCase(keys, result);
             }
 
-            foreach (string key in keys)            
+            foreach (string key in keys)
                 result.Add(key, LoadFromSource(key));
-            
 
-            return result;  
+
+            return result;
         }
 
         private static IDictionary<string, ProviderCacheItem> ZeeChangeCase(ICollection<string> keys, Dictionary<string, ProviderCacheItem> result)

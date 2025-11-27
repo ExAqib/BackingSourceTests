@@ -82,7 +82,8 @@ namespace Common.WriteThru
                 var _ when key.Contains (KeyForZeeChangeSuccess) => WriteThruCommunicationCases.ZeeChangeSuccess,
                 _ => throw new ArgumentException(InvalidKeyExceptionMessage, nameof(key))
             };
-        }    
+        }       
+
     }
 
     public enum WriteThruCommunicationCases

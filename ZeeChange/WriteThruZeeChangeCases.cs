@@ -41,7 +41,7 @@ namespace BackingSourceTests.ZeeChange
             var zeeChangeItems = TransformKeys(_items, WriteThruCommunication.KeyForZeeChangeCacheWriteThruFailure);
 
             var addBulkRes = Cache.AddBulk(zeeChangeItems);
-            AsyncStartNode();
+            AsyncStartSecondNode();
             var inserBulkRes = Cache.InsertBulk(zeeChangeItems, GetWriteThruOptions(mode));
 
             WaitForWriteBehindCompletionIfNeeded(mode);
@@ -55,7 +55,7 @@ namespace BackingSourceTests.ZeeChange
             var successItems = TransformKeys(_items, WriteThruCommunication.KeyForZeeChangeSuccess);
 
             var addBulkRes = Cache.AddBulk(successItems, GetWriteThruOptions(mode));
-            AsyncStartNode();
+            AsyncStartSecondNode();
 
             WaitForWriteBehindCompletionIfNeeded(mode);           
 
@@ -69,7 +69,7 @@ namespace BackingSourceTests.ZeeChange
             var removeItems = TransformKeys(_items, WriteThruCommunication.KeyForZeeChangeRemoveFromCache);
 
             Cache.AddBulk(removeItems);
-            AsyncStartNode();
+            AsyncStartSecondNode();
             Cache.RemoveBulk(removeItems.Keys.ToArray(), GetWriteThruOptions(mode));
 
             WaitForWriteBehindCompletionIfNeeded(mode);
@@ -85,7 +85,7 @@ namespace BackingSourceTests.ZeeChange
         {
             var retryItems = TransformKeys(_items, key);
 
-            AsyncStartNode();
+            AsyncStartSecondNode();
             Cache.AddBulk(retryItems,GetWriteThruOptions(mode));
 
             WaitForWriteBehindCompletionIfNeeded(mode);
@@ -104,7 +104,7 @@ namespace BackingSourceTests.ZeeChange
 
             Cache.AddBulk(updatedItems);
 
-            AsyncStartNode();
+            AsyncStartSecondNode();
             Cache.InsertBulk(updatedItems, defaultOptions);
 
             WaitForWriteBehindCompletionIfNeeded(mode);

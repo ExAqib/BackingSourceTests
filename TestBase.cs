@@ -176,7 +176,7 @@ namespace BackingSourceTests
             }
         }
 
-        public void AsyncStartNode()
+        public void AsyncStartSecondNode()
         {
             // Expecting that the get bulk call will reach the read thru provider in 2 seconds. Provider with parse the key and will wait for 30 seconds.
             // In that 30 seconds, start another node to perform state transfer.
