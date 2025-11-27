@@ -21,10 +21,6 @@ namespace BackingSourceTests.WriteThru
         {
         }
 
-        public ITopic Topic { get; set; }
-
-        public IList<string> Messages = new List<string>();
-
         public CacheItem? CacheItem { get; set; }
 
         public static WriteThruOptions GetWriteThruOptions()
