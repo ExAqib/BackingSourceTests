@@ -29,7 +29,7 @@ namespace Common.Providers
             if (Util.IsDataSourceZeeChangeKey(key))
                 Thread.Sleep(WriteThruCommunication.ZEE_CHANGE_WAIT_TIME_IN_SECONDS * 1000);
 
-            return dataType switch
+            ProviderDataTypeItem<IEnumerable> item = dataType switch
             {
                 DistributedDataType.List =>
                     new ProviderDataTypeItem<IEnumerable>(new List<string> { key }),
@@ -48,6 +48,40 @@ namespace Common.Providers
 
                 _ => throw new NotSupportedException($"Unsupported data type: {dataType}")
             };
+
+            if (ReadThruCacheCommunication.ShouldAddMetaInfoInDataStructure(key))
+            {
+                 item = dataType switch
+                {
+                    DistributedDataType.List =>
+                        new ProviderDataTypeItem<IEnumerable>(new List<Product> { Util.GetProductForBackingSource(key) }),
+
+                    DistributedDataType.Dictionary =>
+                        new ProviderDataTypeItem<IEnumerable>(new Dictionary<string, Product> { { key, Util.GetProductForBackingSource(key) } }),
+
+                    DistributedDataType.Counter =>
+                        new ProviderDataTypeItem<IEnumerable>(ReadThruCacheCommunication.DefaultCounterValue),
+
+                    DistributedDataType.Queue =>
+                        new ProviderDataTypeItem<IEnumerable>(CreateQueueForDSMeta(key)),
+
+                    DistributedDataType.Set =>
+                        new ProviderDataTypeItem<IEnumerable>(new HashSet<Product> { Util.GetProductForBackingSource(key) }),
+
+                    _ => throw new NotSupportedException($"Unsupported data type: {dataType}")
+                };
+
+                ReadThruCacheCommunication.AddMetaInfoInProviderDataType(item, key);
+            }
+
+            return item;
+        }
+
+        private static Queue<Product> CreateQueueForDSMeta(string key)
+        {
+            var q = new Queue<Product>();
+            q.Enqueue(Util.GetProductForBackingSource(key));
+            return q;
         }
 
         private static Queue<string> CreateQueue(string key)

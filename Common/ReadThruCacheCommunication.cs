@@ -1,4 +1,5 @@
-﻿using Alachisoft.NCache.Runtime;
+﻿using Alachisoft.NCache.Client;
+using Alachisoft.NCache.Runtime;
 using Alachisoft.NCache.Runtime.Caching;
 using Common.Extensions;
 using System;
@@ -28,7 +29,7 @@ namespace Common
 
         static double _magicNumber = -99.99;
         public const int AcceptableExpirationDeviation = 1; //expiration obtanied from cache may not be exact as set. 
-        internal static readonly long DefaultCounterValue = 958946565;
+        public static readonly long DefaultCounterValue = 958946565;
 
         #region DataStructure Keys  
 
@@ -67,8 +68,13 @@ namespace Common
             Console.WriteLine($" expirationInterval: {expirationIntervalFetched} ==  expirationIntervalOfItemFromCache: {expirationIntervalSet}");
 
 
-            return Math.Abs(expirationIntervalFetched - expirationIntervalSet) <= AcceptableExpirationDeviation;
+            return IsExpirationDeviationAcceptable(expirationIntervalFetched, expirationIntervalSet);
 
+        }
+
+        private static bool IsExpirationDeviationAcceptable(double expirationIntervalFetched, double expirationIntervalSet)
+        {
+            return Math.Abs(expirationIntervalFetched - expirationIntervalSet) <= AcceptableExpirationDeviation;
         }
 
         public static double GetExpirationValueFromKey(string key)
@@ -242,7 +248,57 @@ namespace Common
             // Set the value using reflection
             property.SetValue(product, convertedValue);
         }
+          
+        public static void AddMetaInfoInProviderDataType(ProviderDataTypeItem<IEnumerable> item, string key)
+        {
+            item.Expiration = new Expiration(ExpirationType.Absolute, TimeSpan.FromMinutes(10));
+            item.Group = key; item.Tags = [new Tag(key)]; item.NamedTags = new NamedTagsDictionary();
+            item.NamedTags.Add(key, 7.5); item.ItemPriority = CacheItemPriority.High;
+            item.ResyncOptions = new ResyncOptions(true);
+        }
 
+        public static void VerifyMetaInfoInProviderDataType(CacheItem item, string key)
+        {
+            // 1. Expiration Check
+            if (item.Expiration == null || item.Expiration.Type != ExpirationType.Absolute)
+                throw new Exception($"Expiration type mismatch. Expected: {ExpirationType.Absolute}, Actual: {item.Expiration?.Type}");
+
+            if (!IsExpirationDeviationAcceptable(item.Expiration.ExpireAfter.TotalMinutes ,10))
+                throw new Exception($"Expiration duration mismatch. Expected: 10 minutes, Actual: {item.Expiration.ExpireAfter.TotalMinutes}");
+
+            // 2. Group Check
+            if (item.Group != key)
+                throw new Exception($"Group mismatch. Expected: {key}, Actual: {item.Group}");
+
+            // 3. Tags Check
+            if (item.Tags == null || item.Tags.Length != 1 || item.Tags[0].TagName != key)
+                throw new Exception($"Tags mismatch. Expected a single tag '{key}'.");
+
+            // 4. Named Tags Check
+            if (item.NamedTags == null || !item.NamedTags.Contains(key))
+                throw new Exception($"NamedTag '{key}' is missing.");
+
+            if (!item.NamedTags.ToDictionary()[key].Equals(7.5))
+                throw new Exception($"NamedTag value mismatch for key '{key}'. Expected: 7.5, Actual: {item.NamedTags.ToDictionary()[key]}");
+
+            // 5. Item Priority Check
+            if (item.Priority != CacheItemPriority.High)
+                throw new Exception($"ItemPriority mismatch. Expected: High, Actual: {item.Priority}");
+
+            // 6. Resync Options Check
+            if (item.ResyncOptions == null || !item.ResyncOptions.ResyncOnExpiration)
+                throw new Exception($"ResyncOptions mismatch. Expected: ResyncOnExpiration = true.");
+        }
+
+        public static string GetDataStructureKeyForMetaInfo(string dataStructureKeyForList)
+        {
+            return $"META_INFO|{dataStructureKeyForList}";
+        }
+
+        public static bool ShouldAddMetaInfoInDataStructure(string key)
+        {
+            return key.Contains("META_INFO");
+        }
     }
 
     public enum ReadThruCacheCommunicationCases

@@ -10,6 +10,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Common\**" />
+    <EmbeddedResource Remove="Common\**" />
+    <None Remove="Common\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Alachisoft.NCache.SDK" Version="5.3.7" />
     <PackageReference Include="coverlet.collector" Version="6.0.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
@@ -42,6 +48,10 @@
 
   <ItemGroup>
     <Folder Include="WriteThru\DataStructures\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="Common\Common.csproj" />
   </ItemGroup>
 
 </Project>

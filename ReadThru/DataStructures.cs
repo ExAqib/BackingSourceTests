@@ -1,6 +1,9 @@
-﻿using Alachisoft.NCache.Runtime.Caching;
+﻿using Alachisoft.NCache.Client;
+using Alachisoft.NCache.Client.DataTypes.Collections;
+using Alachisoft.NCache.Runtime.Caching;
 using BackingSourceTests.ReadThru;
 using Common;
+using NUnit.Framework.Internal;
 
 namespace BackingSourceTests.ReadThru.DataStructures
 {
@@ -23,11 +26,11 @@ namespace BackingSourceTests.ReadThru.DataStructures
             string key = ReadThruCacheCommunication.DataStructureKeyForList;
 
             var list = Cache.DataTypeManager.GetList<string>(key, GetReadThruOptions());
-            
-            
+
+
             VerifyDSListObtainedFromBackingSource(key, list);
         }
-        
+
         [Test]
         public void GetList_WhenPresentInCache_ShouldNOTCallDataSource()
         {
@@ -61,7 +64,7 @@ namespace BackingSourceTests.ReadThru.DataStructures
 
             // Now get with ReadThruForced option
             list = Cache.DataTypeManager.GetList<string>(key, GetReadThruForcedOptions());
-            VerifyDSListObtainedFromBackingSource(key,list);
+            VerifyDSListObtainedFromBackingSource(key, list);
 
         }
 
@@ -76,6 +79,16 @@ namespace BackingSourceTests.ReadThru.DataStructures
             Assert.That(list, Is.Null, "List should be null when no backing-source options are provided.");
         }
 
+        [Test]
+        public void GetListWithReadThru_AddMetaInfoFromProvider_MetaInfoSuccesfulyAdded()
+        {
+            string key = ReadThruCacheCommunication.GetDataStructureKeyForMetaInfo(ReadThruCacheCommunication.DataStructureKeyForList);
+
+            Cache.DataTypeManager.GetList<Product>(key, GetReadThruOptions());
+
+            VerifyMetaInfoInDataStructure(key);
+        }
+
         // -----------------------------
         //      DICTIONARY TESTS
         // -----------------------------
@@ -86,7 +99,7 @@ namespace BackingSourceTests.ReadThru.DataStructures
             var dict = Cache.DataTypeManager.GetDictionary<string, object>(key, GetReadThruOptions());
 
             VerifyDSDictionaryObtainedFromBackingSource(key, dict);
-        }        
+        }
 
         [Test]
         public void GetDictionary_WhenPresentInCache_ShouldNOTCallDataSource()
@@ -137,7 +150,7 @@ namespace BackingSourceTests.ReadThru.DataStructures
         // -----------------------------
         //      QUEUE TESTS
         // -----------------------------
-       
+
         [Test]
         public void GetQueueFromDataSource_WhenNotPresentInCache_QueueIsObtainedFromDB()
         {
@@ -148,7 +161,7 @@ namespace BackingSourceTests.ReadThru.DataStructures
             VerifyDSQueueObtainedFromBackingSource(key, queue);
         }
 
-        
+
 
         [Test]
         public void GetQueueWithReadThruForced_WhenPresentInCache_ShouldCallDataSource()
@@ -205,7 +218,7 @@ namespace BackingSourceTests.ReadThru.DataStructures
 
             VerifyDSHashSetObtainedFromBackingSource(key, set);
         }
-                
+
 
         [Test]
         public void GetSet_WhenPresentInCache_ShouldNOTCallDataSource()
@@ -264,7 +277,7 @@ namespace BackingSourceTests.ReadThru.DataStructures
             VerifyDSCounterObtainedFromBackingSource(counter);
         }
 
-        
+
         [Test]
         public void GetCounter_WhenPresentInCache_ShouldNOTCallDataSource()
         {

@@ -47,5 +47,10 @@ namespace BackingSourceTests.ReadThru
             Assert.That(counter.Value, Is.EqualTo(ReadThruCacheCommunication.DefaultCounterValue));
         }
 
+        internal void VerifyMetaInfoInDataStructure(string key)
+        {
+            var cacheItem = Cache.GetCacheItem(key);
+            ReadThruCacheCommunication.VerifyMetaInfoInProviderDataType(cacheItem, key);
+        }
     }
 }

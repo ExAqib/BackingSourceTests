@@ -53,7 +53,7 @@ namespace Common
             return key.Contains(ZEE_CHANGE_PREFIX);
         }
 
-        internal static string GetAppendedZeeChangeKey(string dataStructureKeyForList)
+        public static string GetAppendedZeeChangeKey(string dataStructureKeyForList)
         {
             // guid is to make sure that item is moved during state transfer
             return $"{Guid.NewGuid().ToString().Split('-')[0]}|{ZEE_CHANGE_PREFIX}|{dataStructureKeyForList}";
