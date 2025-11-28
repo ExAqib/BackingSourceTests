@@ -55,7 +55,7 @@ namespace BackingSourceTests.ZeeChange
             VerifyDSHashSetObtainedFromBackingSource(key, set);
         }
 
-        [Test, Ignore("Bug being fixed by ahmed gul.")]
+        [Test]
 
         public void GetQueue_FromDB_WhenMissing_DuringZeeChange()
         {
@@ -90,7 +90,7 @@ namespace BackingSourceTests.ZeeChange
             var dictionary = Cache.DataTypeManager.GetDictionary<string, string>("ZT_Dict", GetReadThruOptions());
             var set = Cache.DataTypeManager.GetHashSet<string>("ZT_Set", GetReadThruOptions());
             //UNCOMMENT WHEN Q BUG FIXED
-            //var q = Cache.DataTypeManager.GetQueue<string>("ZT_Queue", GetReadThruOptions());
+            var q = Cache.DataTypeManager.GetQueue<string>("ZT_Queue", GetReadThruOptions());
             var counter = Cache.DataTypeManager.GetCounter("ZT_Counter", GetReadThruOptions());
 
             for (int i = 0; i < count; i++)
@@ -100,7 +100,7 @@ namespace BackingSourceTests.ZeeChange
                 list.Add(key);
                 dictionary.Add(key, key);
                 set.Add(key);
-                //q.Enqueue(key);
+                q.Enqueue(key);
                 counter.Increment();
             }
 
