@@ -27,7 +27,7 @@ namespace BackingSourceTests.ReadThru.Bulk
         public void SetUp()
         {
             Cache.Clear();
-            _keys = GetRandomKeysForReadThruBulk(10); // TODO change to 1000
+            _keys = GetRandomKeys(10); // TODO change to 1000
         }
 
         

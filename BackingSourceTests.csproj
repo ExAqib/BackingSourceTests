@@ -47,10 +47,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="WriteThru\DataStructures\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="Common\Common.csproj" />
   </ItemGroup>
 

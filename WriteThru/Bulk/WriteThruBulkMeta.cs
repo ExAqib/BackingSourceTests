@@ -87,19 +87,7 @@ namespace BackingSourceTests.WriteThru.Bulk
                 SetAbsoluteExpirationForWriteThruVerification(item.Value);
             }
         }
-
-        private bool VerifyMessageWrittenByProvider(string message)
-        {
-            var lines = File.ReadAllLines(WriteThruCommunication.WRITE_THRU_SHARED_FILE);
-
-            if (lines == null || lines.Length == 0)
-                return false;
-
-
-            var lastLine = lines.Last();
-            return  lastLine.Contains(message);
-            return lines.Length == _items.Count && lastLine.Contains(message);
-        }
+       
         #endregion
     }
 }

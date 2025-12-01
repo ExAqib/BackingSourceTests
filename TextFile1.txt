@@ -1,0 +1,4 @@
+﻿Before testing, make sure the shared file path is accessible by all machined. For Remote VM, run following command in PowerShell to share the folder:
+    New-PSDrive -Name $driveLetter -PSProvider FileSystem -Root $networkPath -Credential $credential
+For example:
+    New-PSDrive -Name Z -PSProvider FileSystem -Root \\PDC\fileshare -Credential Domain\User 

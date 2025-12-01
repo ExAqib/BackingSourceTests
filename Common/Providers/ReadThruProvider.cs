@@ -51,7 +51,7 @@ namespace Common.Providers
 
             if (ReadThruCacheCommunication.ShouldAddMetaInfoInDataStructure(key))
             {
-                 item = dataType switch
+                item = dataType switch
                 {
                     DistributedDataType.List =>
                         new ProviderDataTypeItem<IEnumerable>(new List<Product> { Util.GetProductForBackingSource(key) }),
@@ -66,11 +66,14 @@ namespace Common.Providers
                         new ProviderDataTypeItem<IEnumerable>(CreateQueueForDSMeta(key)),
 
                     DistributedDataType.Set =>
-                        new ProviderDataTypeItem<IEnumerable>(new HashSet<Product> { Util.GetProductForBackingSource(key) }),
+                        new ProviderDataTypeItem<IEnumerable>(new HashSet<string> { key}),
 
                     _ => throw new NotSupportedException($"Unsupported data type: {dataType}")
                 };
 
+                if (key.Equals(ReadThruCacheCommunication.DataStructureKeyForSetNegative))
+                    item = new ProviderDataTypeItem<IEnumerable>(new HashSet<Product> { Util.GetProductForBackingSource(key) });
+                
                 ReadThruCacheCommunication.AddMetaInfoInProviderDataType(item, key);
             }
 

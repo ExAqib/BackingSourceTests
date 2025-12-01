@@ -164,7 +164,6 @@ namespace Common.Providers
         }
 
 
-
         public ICollection<OperationResult> WriteToDataSource(ICollection<WriteOperation> operations)
         {
 
@@ -310,8 +309,82 @@ namespace Common.Providers
 
         public ICollection<OperationResult> WriteToDataSource(ICollection<DataTypeWriteOperation> dataTypeWriteOperations)
         {
-            throw new NotImplementedException();
+            var operationResult = new List<OperationResult>() { };
+
+            foreach (DataTypeWriteOperation operation in dataTypeWriteOperations)
+            {
+                switch (operation.DataType)
+                {
+                    case DistributedDataType.List:
+                        return HandleListWriteThruOperation(dataTypeWriteOperations);
+
+                    default:
+                        operationResult.Add(new OperationResult(operation, OperationResult.Status.Success)
+                        {
+                           // Error = $"Data type {operation.DataType} is not supported in WriteThru provider."
+                        });
+                        WriteInFile(operation.Key);
+                        break;
+                }
+
+                break;
+            }
+            return operationResult;
         }
+
+        private ICollection<OperationResult> HandleListWriteThruOperation(ICollection<DataTypeWriteOperation> dataTypeWriteOperations)
+        {
+            DataTypeWriteOperation operation = dataTypeWriteOperations.ToList().First();
+            DataTypeWriteOperation? writeDataTypeOperation ;
+
+            ProviderDataTypeItem<object>? providerDataTypeItem;
+            OperationResult operaionResult = new OperationResult(operation,OperationResult.Status.Success);
+
+            ICollection<OperationResult> result = new List<OperationResult>();
+
+            switch (operation.OperationType)
+            {
+                // There is some issue in data struture. These operations are not being updated in cache.
+                case DatastructureOperationType.CreateDataType:
+                    //var providerDataTypeItem = new ProviderDataTypeItem<object>(new Dictionary<string, object> { { operation.Key, operation.Key } });
+                    providerDataTypeItem = new ProviderDataTypeItem<object>(new List<Product> { Util.GetProductForBackingSource(operation.Key) });
+                    writeDataTypeOperation = new DataTypeWriteOperation(operation.Key, providerDataTypeItem, operation.OperationType, 1);
+                    operaionResult = new OperationResult(writeDataTypeOperation, OperationResult.Status.Success);
+                    operaionResult.UpdateInCache = true;
+                    result.Add(operaionResult);
+                    WriteInFile(operation.Key);
+
+                    break;
+
+                case DatastructureOperationType.AddToDataType:
+                    providerDataTypeItem = new ProviderDataTypeItem<object>(new List<Product> { Util.GetProductForBackingSource(operation.Key) });
+                    writeDataTypeOperation = new DataTypeWriteOperation(operation.Key, providerDataTypeItem, operation.OperationType, 1);
+                    operation.ProviderItem = providerDataTypeItem ;                    
+                    operaionResult = new OperationResult(operation, OperationResult.Status.Success);                    
+                   // operaionResult = new OperationResult(writeDataTypeOperation, OperationResult.Status.Success);
+                    operaionResult.UpdateInCache = true;
+                    result.Add(operaionResult);
+                    WriteInFile(operation.Key);
+                    break;
+
+                case DatastructureOperationType.DeleteFromDataType:
+                    WriteInFile(operation.Key);
+                    result.Add(operaionResult);
+                    break;
+                case DatastructureOperationType.DeleteDataType:
+                    result.Add(operaionResult);
+                    WriteInFile(operation.Key);
+
+                    break;
+                case DatastructureOperationType.UpdateDataType:
+                    WriteInFile(operation.Key);
+                    result.Add(operaionResult);
+                    break;
+            }
+
+            return result;
+        }
+
         public void Dispose()
         {
             //throw new NotImplementedException();
@@ -328,7 +401,7 @@ namespace Common.Providers
 
         void WriteInFile(string message)
         {
-            File.WriteAllText(filePath, message);
+            File.AppendAllLines(filePath, [message]);
         }
     }
 

@@ -1,6 +1,7 @@
 ﻿using Alachisoft.NCache.Client;
 using Alachisoft.NCache.Client.DataTypes.Collections;
 using Alachisoft.NCache.Runtime.Caching;
+using Alachisoft.NCache.Runtime.Exceptions;
 using BackingSourceTests.ReadThru;
 using Common;
 using NUnit.Framework.Internal;
@@ -147,6 +148,18 @@ namespace BackingSourceTests.ReadThru.DataStructures
             Assert.That(map, Is.Null);
         }
 
+
+        [Test]
+        public void GetDictionaryWithReadThru_AddMetaInfoFromProvider_MetaInfoSuccesfulyAdded()
+        {
+            string key = ReadThruCacheCommunication.GetDataStructureKeyForMetaInfo(ReadThruCacheCommunication.DataStructureKeyForDictionary);
+
+            var map = Cache.DataTypeManager.GetDictionary<string, Product>(key, GetReadThruOptions());
+            Assert.That(map, Is.Not.Null);
+            VerifyMetaInfoInDataStructure(key);
+        }
+
+
         // -----------------------------
         //      QUEUE TESTS
         // -----------------------------
@@ -206,6 +219,19 @@ namespace BackingSourceTests.ReadThru.DataStructures
             Assert.That(queue, Is.Null);
         }
 
+
+        [Test]
+        public void GetQueueWithReadThru_AddMetaInfoFromProvider_MetaInfoSuccesfulyAdded()
+        {
+            string key = ReadThruCacheCommunication.GetDataStructureKeyForMetaInfo(ReadThruCacheCommunication.DataStructureKeyForQueue);
+
+            var queue = Cache.DataTypeManager.GetQueue<string>(key, GetReadThruForcedOptions());
+
+            Assert.That(queue, Is.Not.Null);
+            VerifyMetaInfoInDataStructure(key);
+        }
+
+
         // -----------------------------
         //      SET TESTS
         // -----------------------------
@@ -264,6 +290,36 @@ namespace BackingSourceTests.ReadThru.DataStructures
             Assert.That(set, Is.Null);
         }
 
+        [Test]
+        public void GetHashSetWithReadThru_AddMetaInfoWithProductFromProvider_ExceptionIsThrowm()
+        {
+            string key = ReadThruCacheCommunication.GetDataStructureKeyForMetaInfo(ReadThruCacheCommunication.DataStructureKeyForSetNegative);
+
+            var exception = Assert.Throws<OperationFailedException>(() =>
+            {
+                var set = Cache.DataTypeManager.GetHashSet<Product>(key, GetReadThruForcedOptions());
+            });
+
+            Assert.That(exception.Message, Is.EqualTo("Type is not allowed"));
+
+
+        }
+
+
+        [Test]
+        public void GetHashSetWithReadThru_AddMetaInfoFromProvider_MetaInfoAdded()
+        {
+            string key = ReadThruCacheCommunication.GetDataStructureKeyForMetaInfo(ReadThruCacheCommunication.DataStructureKeyForSet);
+
+            var set = Cache.DataTypeManager.GetHashSet<string>(key, GetReadThruOptions());
+
+            VerifyDSHashSetObtainedFromBackingSource(key, set);
+
+            VerifyMetaInfoInDataStructure(key);
+        }
+
+
+
         // -----------------------------
         //      COUNTER TESTS
         // -----------------------------
@@ -315,6 +371,19 @@ namespace BackingSourceTests.ReadThru.DataStructures
 
             Assert.That(counter, Is.Null);
         }
+
+        [Test]
+        public void GetCounterWithReadThru_AddMetaInfoFromProvider_MetaInfoSuccesfulyAdded()
+        {
+            string key = ReadThruCacheCommunication.GetDataStructureKeyForMetaInfo(ReadThruCacheCommunication.DataStructureKeyForCounter);
+
+            var counter = Cache.DataTypeManager.GetCounter(key, GetReadThruForcedOptions());
+
+            Assert.That(counter, Is.Not.Null);
+            VerifyDSCounterObtainedFromBackingSource(counter);
+            VerifyMetaInfoInDataStructure(key);
+        }
+
 
     }
 }

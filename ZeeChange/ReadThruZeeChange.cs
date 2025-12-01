@@ -14,8 +14,8 @@ namespace BackingSourceTests.ZeeChange
         public void SetUp()
         {
             Cache.Clear();
-            StopSecondNode();
-            _keys = GetRandomKeysForReadThruBulk(10000);
+            StopNode();
+            _keys = GetRandomKeys(10000);
             PerformAddBulk(_keys);
         }
 
@@ -30,7 +30,7 @@ namespace BackingSourceTests.ZeeChange
 
             var debugItem = Cache.Get<Product>(halfKeys[0]);
 
-            AsyncStartSecondNode();
+            AsyncStartNode();
 
             // GetBulk call will wait for 30 seconds for state transfer to complete.
             IDictionary<string, Product>? items = Cache.GetBulk<Product>(halfKeys, GetReadThruForcedOptions());
@@ -67,7 +67,7 @@ namespace BackingSourceTests.ZeeChange
 
             var debugItem = Cache.Get<Product>(_keys[0]);
 
-            AsyncStartSecondNode();
+            AsyncStartNode();
 
             IDictionary<string, Product>? items = Cache.GetBulk<Product>(halfKeys, GetReadThruForcedOptions());
 

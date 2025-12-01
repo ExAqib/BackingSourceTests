@@ -58,7 +58,14 @@ namespace Common.WriteThru
         public const int RetryCount = 3; // Number of retries for failure scenarios
 
         private const string WriteThruKeyForRemoveForExpirationVerification = "WriteThru|Exp|";
-        
+
+        #region Data Structures
+        public const string DataStructureKeyForList = "WriteThru|DataStructure|List";
+        public const string DataStructureKeyForDictionary = "WriteThru|DataStructure|Dictionary";
+        public const string DataStructureKeyForQueue = "WriteThru|DataStructure|Queue";
+        public const string DataStructureKeyForSet = "WriteThru|DataStructure|Set";
+        public const string DataStructureKeyForCounter = "WriteThru|DataStructure|Counter";
+        #endregion
 
         internal static WriteThruCommunicationCases GetCase(string key)
         {

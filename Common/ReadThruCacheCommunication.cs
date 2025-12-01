@@ -38,6 +38,7 @@ namespace Common
         public const string DataStructureKeyForQueue = "ReadThru|DS|QUEUE|";
         public const string DataStructureKeyForCounter = "ReadThru|DS|COUNTER|";
         public const string DataStructureKeyForSet = "ReadThru|DS|SET|";
+        public const string DataStructureKeyForSetNegative = "ReadThru|DS|SET|Negative";
         #endregion
 
         internal static ReadThruCacheCommunicationCases GetCaseForKey(string key)
@@ -259,6 +260,9 @@ namespace Common
 
         public static void VerifyMetaInfoInProviderDataType(CacheItem item, string key)
         {
+            if (item == null)
+                throw new ArgumentNullException(nameof(item), "CacheItem is null for meta info verification.");
+
             // 1. Expiration Check
             if (item.Expiration == null || item.Expiration.Type != ExpirationType.Absolute)
                 throw new Exception($"Expiration type mismatch. Expected: {ExpirationType.Absolute}, Actual: {item.Expiration?.Type}");

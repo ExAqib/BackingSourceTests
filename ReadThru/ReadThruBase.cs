@@ -71,17 +71,7 @@ namespace BackingSourceTests.ReadThru
             return resyncOptions;
         }   
 
-        public static string[] GetRandomKeysForReadThruBulk(int totalKeys = 10000)
-        {
-            string[] keys = new string[totalKeys];
-
-            for (int i = 0; i < totalKeys; i++)
-            {
-                keys[i] = GetRandomKey();
-            }
-
-            return keys;
-        }
+       
 
         public CacheItem GetCacheItemWithResyncOptions(Product stale)
         {
@@ -92,20 +82,7 @@ namespace BackingSourceTests.ReadThru
             };
         }
                
-
-        public void PerformAddBulk(string[] keys)
-        {
-            var items = new Dictionary<string, CacheItem>();
-            
-            for (int i = 0; i < keys.Length; i++)
-            {
-                var product = Util.GetProductForCache(keys[i]);
-                var cacheItem = GetCacheItem(product);
-                items.Add(keys[i], cacheItem);
-            }
-
-            Cache.AddBulk(items);
-        }
+               
                 
 
         public void PerformAddBulkWithResyncOptions(string[] keys)
@@ -121,5 +98,6 @@ namespace BackingSourceTests.ReadThru
 
             Cache.AddBulk(bulkItems);
         }
+      
     }
 }
