@@ -2,3 +2,7 @@
     New-PSDrive -Name $driveLetter -PSProvider FileSystem -Root $networkPath -Credential $credential
 For example:
     New-PSDrive -Name Z -PSProvider FileSystem -Root \\PDC\fileshare -Credential Domain\User 
+
+ Test by running this command in PowerShell:
+     echo "test Message" > \\sharedpath\fileshare\testfile.txt
+verify this message is written in shared file path.

@@ -19,16 +19,19 @@ namespace BackingSourceTests
     {
         #region Configurations
 
-        // README:
+        // QUICK VERIFICATION README:
         // Update Security info in CacheConnectionOptions in for cache start/stop  get methods.
-        // UPDATE CLEAN INTERVAL TO 5SEC.update clean interval to 5 seconds.
+        // UPDATE CLEAN INTERVAL TO 5SEC. update clean interval to 5 seconds.
         // DEFINE QUERY INDEX FOR ID FIELD IN PRODUCT CLASS.
-        // DEPOLOY BOTH READTHRU AND WRITETHRU PROVIDERS ALONGWITH COMMON.DLL
-        // MAKE SURE PDC IS ACCESSABLE FROM ALL MACHINES AS SOME TEST CASES WILL WRITE THERE.
-        // UPDATE CACHESERVERS, FIELD AND ADD THE CURRENT SERVERS. 
+        // DEPOLOY BOTH READTHRU AND WRITETHRU PROVIDERS ALONGWITH COMMON.DLL (add .pdb as well for precaution)
+        // MAKE SURE PDC IS ACCESSABLE FROM ALL MACHINES AS SOME TEST CASES WILL WRITE THERE. (details mentioned in actual testfile1.txt)
+        // UPDATE CACHESERVERS FIELD AND ADD THE CURRENT SERVERS. 
 
-        public string CacheName = "BackingSourceTests";//BackingSourceTests, replicated, test , partition
+        public string CacheName = "partition";//BackingSourceTests, replicated, test , partition
         public string[] CacheServers = { "20.200.20.46", "20.200.17.61" };
+
+        public string UserNameForSecurity = "aqib_naveed";
+        public string PasswordForSecurity = "4Islamabad";
 
         public int WriteBehindCompletionWaitTime = 3; // (seconds) Wait time for write-behind completion to ensure data is properly added in cache.
         public int CleanInterval = 05 + 05; //(seconds) Assign value that is double of actual clean interval to ensure that clean interanval does not interfere with tests.
@@ -46,14 +49,61 @@ namespace BackingSourceTests
 
         public ICache Cache { get; set; }
 
+        int IndexOfNodeToStartStop = 0;
+
+        #region Constructor & Management Calls
         internal TestBase()
         {
             //var cacheConnectionOptions = new CacheConnectionOptions() { ServerList = new List<ServerInfo> { new ServerInfo("20.200.20.46") } };
             var cacheConnectionOptions = new CacheConnectionOptions();
-            cacheConnectionOptions.UserCredentials = new Credentials("aqib_naveed", "4Islamabad");
-            Cache ??= CacheManager.GetCache(CacheName,cacheConnectionOptions);
-
+            cacheConnectionOptions.UserCredentials = new Credentials(UserNameForSecurity, PasswordForSecurity);
+            Cache ??= CacheManager.GetCache(CacheName, cacheConnectionOptions);
         }
+
+        public void StopNode()
+        {
+            int retries = 3;
+            int retryDelay = 3000;
+            while (retries-- > 0)
+            {
+                try
+                {
+                    CacheManager.StopCache(CacheName, new CacheConnection(CacheServers[IndexOfNodeToStartStop]) { UserCredentials = new Credentials(UserNameForSecurity, PasswordForSecurity) });
+                    // CacheManager.StopCache(CacheName, new CacheConnection(CacheServers[0]));+
+                    return;
+                }
+                catch (Exception)
+                {
+                    if (retries == 0)
+                        throw;
+                    Thread.Sleep(retryDelay);
+                }
+            }
+        }
+
+        public void StartNode()
+        {
+            int retries = 3;
+            int retryDelay = 3000; // 5 seconds
+            while (retries-- > 0)
+            {
+                try
+                {
+                    CacheManager.StartCache(CacheName, new CacheConnection(CacheServers[IndexOfNodeToStartStop]) { UserCredentials = new Credentials(UserNameForSecurity, PasswordForSecurity) });
+                    //CacheManager.StartCache(CacheName, new CacheConnection(CacheServers[0]) );
+                    return; // Exit if successful
+                }
+                catch (Exception)
+                {
+                    if (retries == 0)
+                        throw;
+
+                    Thread.Sleep(retryDelay);
+                }
+            }
+        }
+
+        #endregion
 
         public static string GetRandomKey()
         {
@@ -140,49 +190,6 @@ namespace BackingSourceTests
             return updatedKeys;
         }
 
-        public void StopNode()
-        {
-            int retries = 3;
-            int retryDelay = 3000;
-            while (retries-- > 0)
-            {
-                try
-                {
-                    CacheManager.StopCache(CacheName, new CacheConnection(CacheServers[1]) { UserCredentials = new Credentials("aqib_naveed", "4Islamabad") });
-                    // CacheManager.StopCache(CacheName, new CacheConnection(CacheServers[0]));+
-                    return;
-                }
-                catch (Exception)
-                {
-                    if (retries == 0)
-                        throw;
-                    Thread.Sleep(retryDelay);
-                }
-            }
-        }
-
-        public void StartNode()
-        {
-            int retries = 3;
-            int retryDelay = 3000; // 5 seconds
-            while (retries-- > 0)
-            {
-                try
-                {
-                    CacheManager.StartCache(CacheName, new CacheConnection(CacheServers[0]) { UserCredentials = new Credentials("aqib_naveed", "4Islamabad") });
-                    //CacheManager.StartCache(CacheName, new CacheConnection(CacheServers[0]) );
-                    return; // Exit if successful
-                }
-                catch (Exception)
-                {
-                    if (retries == 0)
-                        throw;
-
-                    Thread.Sleep(retryDelay);
-                }
-            }
-        }
-
         public void AsyncStartNode()
         {
             // Expecting that the get bulk call will reach the read thru provider in 2 seconds. Provider with parse the key and will wait for 30 seconds.
@@ -229,22 +236,26 @@ namespace BackingSourceTests
 
         public virtual void AddFewItemsOfAllDataStructures(int count)
         {
-            var list = Cache.DataTypeManager.CreateList<string>("ZT_List");
-            var dictionary = Cache.DataTypeManager.CreateDictionary<string, string>("ZT_Dict");
-            var set = Cache.DataTypeManager.CreateHashSet<string>("ZT_Set");
-            var q = Cache.DataTypeManager.CreateQueue<string>("ZT_Queue");
-            var counter = Cache.DataTypeManager.CreateCounter("ZT_Counter");
-
-            for (int i = 0; i < count; i++)
+            for (int j = 0; j < count; j++)
             {
-                //string key = $"ZeeChange_Testing_Key_{i}";
-                string key = i.ToString();
-                list.Add(key);
-                dictionary.Add(key, key);
-                set.Add(key);
-                q.Enqueue(key);
-                counter.Increment();
+                var list = Cache.DataTypeManager.CreateList<string>($"ZT_List_{j}");
+                var dictionary = Cache.DataTypeManager.CreateDictionary<string, string>($"ZT_Dict_{j}");
+                var set = Cache.DataTypeManager.CreateHashSet<string>($"ZT_Set_{j}");
+                var q = Cache.DataTypeManager.CreateQueue<string>($"ZT_Queue_{j}");
+                var counter = Cache.DataTypeManager.CreateCounter($"ZT_Counter_{j}");
+
+                for (int i = 0; i < 10; i++)
+                {
+                    //string key = $"ZeeChange_Testing_Key_{i}";
+                    string key = i.ToString();
+                    list.Add(key);
+                    dictionary.Add(key, key);
+                    set.Add(key);
+                    q.Enqueue(key);
+                    counter.Increment();
+                }
             }
+           
 
         }
 

@@ -1,3 +1,8 @@
+exception in Error.Equal at line 99 of provider 
+Unable to acces shared file as used by other process
+
+also add some containds cases for data structure tests
+
 Client Cache testing
 Data Structure testing 
 StateTransfer (Txfr) automation test cases (Write thru/behind is performed against a key and the key is owned by anyother node)
